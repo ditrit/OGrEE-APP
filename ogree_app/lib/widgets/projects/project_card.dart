@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api.dart';
-import 'package:ogree_app/widgets/projects_tenants/popup_dialog.dart';
+import 'package:ogree_app/widgets/projects/project_popup.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/pages/select_page.dart';
@@ -74,7 +74,7 @@ class ProjectCard extends StatelessWidget {
                         splashRadius: 18,
                         iconSize: 13,
                         padding: const EdgeInsets.all(2),
-                        onPressed: () => showCustomDialog(
+                        onPressed: () => showProjectDialog(
                             context,
                             project,
                             localeMsg.editProject,

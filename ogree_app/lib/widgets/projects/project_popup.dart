@@ -4,7 +4,7 @@ import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/project.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-void showCustomDialog(
+void showProjectDialog(
     BuildContext context,
     Project project,
     String title,

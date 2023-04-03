@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 void showSnackBar(
   BuildContext context,
   String message, {
-  Duration duration = const Duration(seconds: 2),
+  Duration duration = const Duration(seconds: 3),
   bool isError = false,
   bool isSuccess = false,
 }) {

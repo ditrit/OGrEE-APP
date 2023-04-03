@@ -6,42 +6,15 @@ import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/models/tenant.dart';
 
-void createTenantPopup(BuildContext context, Function() parentCallback) {
-  showGeneralDialog(
-    context: context,
-    barrierLabel: "Barrier",
-    barrierColor: Colors.black.withOpacity(0.5),
-    transitionDuration: const Duration(milliseconds: 700),
-    pageBuilder: (context, _, __) {
-      return NewTenantCard(parentCallback: parentCallback);
-    },
-    transitionBuilder: (_, anim, __, child) {
-      Tween<Offset> tween;
-      if (anim.status == AnimationStatus.reverse) {
-        tween = Tween(begin: const Offset(-1, 0), end: Offset.zero);
-      } else {
-        tween = Tween(begin: const Offset(1, 0), end: Offset.zero);
-      }
-      return SlideTransition(
-        position: tween.animate(anim),
-        child: FadeTransition(
-          opacity: anim,
-          child: child,
-        ),
-      );
-    },
-  );
-}
-
-class NewTenantCard extends StatefulWidget {
+class CreateTenantPopup extends StatefulWidget {
   Function() parentCallback;
-  NewTenantCard({super.key, required this.parentCallback});
+  CreateTenantPopup({super.key, required this.parentCallback});
 
   @override
-  State<NewTenantCard> createState() => _NewTenantCardState();
+  State<CreateTenantPopup> createState() => _CreateTenantPopupState();
 }
 
-class _NewTenantCardState extends State<NewTenantCard> {
+class _CreateTenantPopupState extends State<CreateTenantPopup> {
   final _formKey = GlobalKey<FormState>();
   String? _tenantName;
   String? _tenantPassword;

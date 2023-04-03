@@ -4,10 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/models/tenant.dart';
 
-const String apiUrl = String.fromEnvironment(
+String apiUrl = String.fromEnvironment(
   'API_URL',
-  // defaultValue: 'http://localhost:8081',
-  defaultValue: 'https://b.api.ogree.ditrit.io',
+  defaultValue: 'http://localhost:8081',
+  // defaultValue: 'https://b.api.ogree.ditrit.io',
 );
 var token = "";
 getHeader(token) => {
@@ -139,7 +139,9 @@ Future<List<Tenant>> fetchTenants({http.Client? client}) async {
   print("API get Tenants");
   client ??= http.Client();
   Uri url = Uri.parse('$apiUrl/api/tenants');
-  final response = await client.get(url, headers: getHeader(token));
+  final response = await client.get(
+    url,
+  );
   print(response.statusCode);
   if (response.statusCode == 200) {
     print(response);
@@ -162,14 +164,54 @@ Future<List<Tenant>> fetchTenants({http.Client? client}) async {
 Future<String> createTenant(Tenant tenant) async {
   print("API create Tenants");
   Uri url = Uri.parse('$apiUrl/api/tenants');
-  final response =
-      await http.post(url, body: tenant.toJson(), headers: getHeader(token));
+  final response = await http.post(url, body: tenant.toJson());
   print(response);
   if (response.statusCode == 200) {
     return "";
   } else {
     String data = json.decode(response.body);
     return "Error creating tenant $data";
+  }
+}
+
+Future<List<Map<String, String>>> fetchTenantDockerInfo(String tenantName,
+    {http.Client? client}) async {
+  print("API get Tenant Docker Info");
+  client ??= http.Client();
+  Uri url = Uri.parse('$apiUrl/api/tenants/${tenantName.toLowerCase()}');
+  final response = await client.get(url);
+  print(response.statusCode);
+  if (response.statusCode == 200) {
+    print(response.body);
+    List<dynamic> data = json.decode(response.body);
+    print("response.body");
+    List<Map<String, String>> converted = [];
+    for (var item in data) {
+      converted.add(Map<String, String>.from(item));
+    }
+    print(converted);
+    return converted;
+  } else {
+    // If the server did not return a 200 OK response,
+    // then throw an exception.
+    throw Exception('${response.statusCode}: Failed to load objects');
+  }
+}
+
+Future<String> fetchContainerLogs(String name, {http.Client? client}) async {
+  print("API get Container Logs $name");
+  client ??= http.Client();
+  Uri url = Uri.parse('$apiUrl/api/containers/$name');
+  final response = await client.get(url);
+  print(response.statusCode);
+  if (response.statusCode == 200) {
+    // print(response.body);
+    Map<String, dynamic> data = json.decode(response.body);
+    return data["logs"].toString();
+  } else {
+    // If the server did not return a 200 OK response,
+    // then throw an exception.
+    throw Exception('${response.statusCode}: Failed to load objects');
   }
 }
 
@@ -210,7 +252,11 @@ Future<Map<String, dynamic>> fetchTenantApiVersion(String tenantUrl,
   }
 }
 
-Future<String> loginAPI(String email, String password) async {
+Future<List<String>> loginAPI(String email, String password,
+    {String userUrl = ""}) async {
+  if (userUrl != "") {
+    apiUrl = userUrl;
+  }
   print("API login $apiUrl");
   Uri url = Uri.parse('$apiUrl/api/login');
   final response = await http.post(url,
@@ -220,8 +266,8 @@ Future<String> loginAPI(String email, String password) async {
     Map<String, dynamic> data = json.decode(response.body);
     data = (Map<String, dynamic>.from(data["account"]));
     token = data["token"]!;
-    return data["Email"].toString();
+    return [data["Email"].toString(), data["isTenant"] ?? ""];
   } else {
-    return "";
+    return [""];
   }
 }

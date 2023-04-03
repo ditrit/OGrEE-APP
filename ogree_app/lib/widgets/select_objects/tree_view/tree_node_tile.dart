@@ -16,7 +16,8 @@ const RoundedRectangleBorder kRoundedRectangleBorder = RoundedRectangleBorder(
 );
 
 class TreeNodeTile extends StatefulWidget {
-  const TreeNodeTile({Key? key}) : super(key: key);
+  final bool isTenantMode;
+  const TreeNodeTile({Key? key, required this.isTenantMode}) : super(key: key);
 
   @override
   _TreeNodeTileState createState() => _TreeNodeTileState();
@@ -32,15 +33,49 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
         hoverColor: Colors.white,
         onTap: () => _describeAncestors(nodeScope.node),
         onLongPress: () => appController.toggleSelection(nodeScope.node.id),
-        child: Row(children: const [
-          LinesWidget(),
+        child: Row(children: [
+          const LinesWidget(),
           NodeWidgetLeadingIcon(
-            expandIcon: Icon(Icons.auto_awesome_mosaic),
-            collapseIcon: Icon(Icons.auto_awesome_mosaic_outlined),
-            leafIcon: Icon(Icons.dns),
+            expandIcon: const Icon(Icons.auto_awesome_mosaic),
+            collapseIcon: const Icon(Icons.auto_awesome_mosaic_outlined),
+            leafIcon: widget.isTenantMode
+                ? const Icon(Icons.dns)
+                : const Icon(Icons.auto_awesome_mosaic),
           ),
-          _NodeActionsChip(),
-          _NodeSelector(),
+          const _NodeActionsChip(),
+          widget.isTenantMode
+              ? Row(
+                  children: const [
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: CircleAvatar(
+                        radius: 13,
+                        child: IconButton(
+                            splashRadius: 18,
+                            iconSize: 14,
+                            padding: EdgeInsets.all(2),
+                            onPressed: null,
+                            icon: Icon(
+                              Icons.edit,
+                              color: Colors.black,
+                            )),
+                      ),
+                    ),
+                    CircleAvatar(
+                      radius: 13,
+                      child: IconButton(
+                          splashRadius: 18,
+                          iconSize: 14,
+                          padding: EdgeInsets.all(2),
+                          onPressed: null,
+                          icon: Icon(
+                            Icons.people,
+                            color: Colors.black,
+                          )),
+                    ),
+                  ],
+                )
+              : const _NodeSelector(),
         ]));
   }
 
