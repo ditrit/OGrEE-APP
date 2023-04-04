@@ -125,7 +125,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
     List<Widget> cards = [];
     if (widget.isTenantMode) {
       for (var tenant in _tenants!) {
-        cards.add(TenantCard(tenant: tenant));
+        cards.add(TenantCard(
+          tenant: tenant,
+          parentCallback: refreshFromChildren,
+        ));
       }
     } else {
       for (var project in _projects!) {

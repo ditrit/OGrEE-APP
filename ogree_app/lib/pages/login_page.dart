@@ -222,7 +222,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   backendInput() {
-    final options = ["http://localhost:8081", 'https://b.api.ogree.ditrit.io'];
+    final options = backendUrl.split(",");
     final localeMsg = AppLocalizations.of(context)!;
     return RawAutocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) {
@@ -286,3 +286,8 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
+
+String backendUrl = const String.fromEnvironment(
+  'BACK_URL',
+  defaultValue: 'http://localhost:8081,https://b.api.ogree.ditrit.io',
+);

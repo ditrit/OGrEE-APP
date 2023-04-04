@@ -174,6 +174,19 @@ Future<String> createTenant(Tenant tenant) async {
   }
 }
 
+Future<String> deleteTenant(String tenantName, {http.Client? client}) async {
+  print("API delete Tenant");
+  client ??= http.Client();
+  Uri url = Uri.parse('$apiUrl/api/tenants/$tenantName');
+  final response = await client.delete(url);
+  print(response.statusCode);
+  if (response.statusCode == 200) {
+    return "";
+  } else {
+    return response.body;
+  }
+}
+
 Future<List<Map<String, String>>> fetchTenantDockerInfo(String tenantName,
     {http.Client? client}) async {
   print("API get Tenant Docker Info");

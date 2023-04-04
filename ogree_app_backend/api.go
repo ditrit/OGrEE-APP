@@ -28,6 +28,7 @@ func main() {
 
 	router.GET("/api/tenants", getTenants)
 	router.GET("/api/tenants/:name", getTenantDockerInfo)
+	router.DELETE("/api/tenants/:name", removeTenant)
 	router.GET("/api/containers/:name", getContainerLogs)
 	router.POST("/api/tenants", addTenant)
 	router.POST("/api/login", login)
@@ -35,7 +36,6 @@ func main() {
 	router.Run(":8081")
 }
 
-// TENANTS
 type tenant struct {
 	Name             string `json:"name" binding:"required"`
 	CustomerPassword string `json:"customerPassword"`
@@ -170,6 +170,38 @@ func addTenant(c *gin.Context) {
 		c.IndentedJSON(http.StatusOK, "all good")
 	}
 
+}
+
+func removeTenant(c *gin.Context) {
+	tenantName := c.Param("name")
+
+	for _, str := range []string{"_cli", "_webapp", "_api", "_db"} {
+		cmd := exec.Command("docker", "rm", "--force", strings.ToLower(tenantName)+str)
+		cmd.Dir = "docker/"
+		var stderr bytes.Buffer
+		cmd.Stderr = &stderr
+		if _, err := cmd.Output(); err != nil {
+			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+			c.IndentedJSON(http.StatusInternalServerError, stderr.String())
+			return
+		}
+	}
+
+	// Update local file
+	data, e := ioutil.ReadFile("tenants.json")
+	if e != nil {
+		panic(e.Error())
+	}
+	var listTenants []tenant
+	json.Unmarshal(data, &listTenants)
+	for i, ten := range listTenants {
+		if ten.Name == tenantName {
+			listTenants = append(listTenants[:i], listTenants[i+1:]...)
+		}
+	}
+	data, _ = json.MarshalIndent(listTenants, "", "  ")
+	_ = ioutil.WriteFile("tenants.json", data, 0644)
+	c.IndentedJSON(http.StatusOK, "all good")
 }
 
 func login(c *gin.Context) {

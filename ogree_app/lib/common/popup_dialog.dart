@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
-void showCustomPopup(BuildContext context, Widget child) {
+void showCustomPopup(BuildContext context, Widget child,
+    {isDismissible = false}) {
   showGeneralDialog(
     context: context,
     barrierLabel: "Barrier",
+    barrierDismissible: isDismissible,
     barrierColor: Colors.black.withOpacity(0.5),
     transitionDuration: const Duration(milliseconds: 700),
     pageBuilder: (context, _, __) {

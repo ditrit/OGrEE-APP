@@ -125,7 +125,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                                 builder: (_, __) {
                                   if (appController.isInitialized) {
                                     return Stack(children: const [
-                                      CustomTreeView(),
+                                      CustomTreeView(isTenantMode: true),
                                       Align(
                                         alignment: Alignment.topRight,
                                         child: Padding(
@@ -365,48 +365,8 @@ class _DataSource extends DataTableSource {
 
 List<Map<String, dynamic>> users = [
   {
-    "name": "Hervé Chibois",
-    "email": "herve.chibois@exaion.com",
-    "roles": {"EXAION": "manager", "EDF.DTEO.DSIT.ITO.ICS.EDC": "super"}
-  },
-  {
-    "name": "Hervé Chibois",
-    "email": "herve.chibois@exaion.com",
-    "roles": {"EXAION": "manager", "EDF.DTEO.DSIT.ITO.ICS.EDC": "super"}
-  },
-  {
-    "name": "Hervé Chibois",
-    "email": "herve.chibois@exaion.com",
-    "roles": {"EXAION": "manager", "EDF.DTEO.DSIT.ITO.ICS.EDC": "super"}
-  },
-  {
-    "name": "Hervé Chibois",
-    "email": "herve.chibois@exaion.com",
-    "roles": {"EXAION": "manager", "EDF.DTEO.DSIT.ITO.ICS.EDC": "super"}
-  },
-  {
-    "name": "Hervé Chibois",
-    "email": "herve.chibois@exaion.com",
-    "roles": {"EXAION": "manager", "EDF.DTEO.DSIT.ITO.ICS.EDC": "super"}
-  },
-  {
-    "name": "Hervé Chibois",
-    "email": "herve.chibois@exaion.com",
-    "roles": {"EXAION": "manager", "EDF.DTEO.DSIT.ITO.ICS.EDC": "super"}
-  },
-  {
-    "name": "Hervé Chibois",
-    "email": "herve.chibois@exaion.com",
-    "roles": {"EXAION": "manager", "EDF.DTEO.DSIT.ITO.ICS.EDC": "super"}
-  },
-  {
-    "name": "Hervé Chibois",
-    "email": "herve.chibois@exaion.com",
-    "roles": {"EXAION": "manager", "EDF.DTEO.DSIT.ITO.ICS.EDC": "super"}
-  },
-  {
-    "name": "Hervé Chibois",
-    "email": "herve.chibois@exaion.com",
-    "roles": {"EXAION": "manager", "EDF.DTEO.DSIT.ITO.ICS.EDC": "super"}
+    "name": "Test test",
+    "email": "user@test.com",
+    "roles": {"TEST": "manager", "TEST.TEST": "super"}
   }
 ];
