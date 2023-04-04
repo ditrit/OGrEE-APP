@@ -80,13 +80,14 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                             const SizedBox(height: 25),
-                            backendInput(),
-                            // Center(
-                            //     child: Image.asset(
-                            //       "assets/edf_logo.png",
-                            //       height: 30,
-                            //     ),
-                            //   ),
+                            allowBackChoice
+                                ? backendInput()
+                                : Center(
+                                    child: Image.asset(
+                                      "assets/edf_logo.png",
+                                      height: 30,
+                                    ),
+                                  ),
                             const SizedBox(height: 32),
                             TextFormField(
                               onSaved: (newValue) => _email = newValue,
@@ -288,6 +289,11 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 String backendUrl = const String.fromEnvironment(
-  'BACK_URL',
+  'BACK_URLS',
   defaultValue: 'http://localhost:8081,https://b.api.ogree.ditrit.io',
+);
+
+bool allowBackChoice = const bool.fromEnvironment(
+  'ALLOW_SET_BACK',
+  defaultValue: false,
 );
