@@ -138,9 +138,7 @@ Future<List<Tenant>> fetchTenants({http.Client? client}) async {
   print("API get Tenants");
   client ??= http.Client();
   Uri url = Uri.parse('$apiUrl/api/tenants');
-  final response = await client.get(
-    url,
-  );
+  final response = await client.get(url, headers: getHeader(token));
   print(response.statusCode);
   if (response.statusCode == 200) {
     print(response);
@@ -163,7 +161,8 @@ Future<List<Tenant>> fetchTenants({http.Client? client}) async {
 Future<String> createTenant(Tenant tenant) async {
   print("API create Tenants");
   Uri url = Uri.parse('$apiUrl/api/tenants');
-  final response = await http.post(url, body: tenant.toJson());
+  final response =
+      await http.post(url, body: tenant.toJson(), headers: getHeader(token));
   print(response);
   if (response.statusCode == 200) {
     return "";
@@ -177,7 +176,7 @@ Future<String> deleteTenant(String tenantName, {http.Client? client}) async {
   print("API delete Tenant");
   client ??= http.Client();
   Uri url = Uri.parse('$apiUrl/api/tenants/$tenantName');
-  final response = await client.delete(url);
+  final response = await client.delete(url, headers: getHeader(token));
   print(response.statusCode);
   if (response.statusCode == 200) {
     return "";
@@ -191,7 +190,7 @@ Future<List<Map<String, String>>> fetchTenantDockerInfo(String tenantName,
   print("API get Tenant Docker Info");
   client ??= http.Client();
   Uri url = Uri.parse('$apiUrl/api/tenants/${tenantName.toLowerCase()}');
-  final response = await client.get(url);
+  final response = await client.get(url, headers: getHeader(token));
   print(response.statusCode);
   if (response.statusCode == 200) {
     print(response.body);
@@ -214,7 +213,7 @@ Future<String> fetchContainerLogs(String name, {http.Client? client}) async {
   print("API get Container Logs $name");
   client ??= http.Client();
   Uri url = Uri.parse('$apiUrl/api/containers/$name');
-  final response = await client.get(url);
+  final response = await client.get(url, headers: getHeader(token));
   print(response.statusCode);
   if (response.statusCode == 200) {
     // print(response.body);

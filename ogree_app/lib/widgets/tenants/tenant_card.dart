@@ -69,7 +69,7 @@ class TenantCard extends StatelessWidget {
                         onPressed: () => Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) => TenantPage(
-                                    userEmail: "userEmail", tenant: tenant),
+                                    userEmail: "admin", tenant: tenant),
                               ),
                             ),
                         icon: const Icon(
@@ -181,8 +181,8 @@ class _DeleteTenantDialogState extends State<DeleteTenantDialog> {
                               width: 24,
                               height: 24,
                               padding: const EdgeInsets.all(2.0),
-                              child: const CircularProgressIndicator(
-                                color: Colors.white,
+                              child: CircularProgressIndicator(
+                                color: Colors.red.shade900,
                                 strokeWidth: 3,
                               ),
                             )

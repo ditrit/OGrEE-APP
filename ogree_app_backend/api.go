@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"ogree_app_backend/auth"
 	"os"
 	"os/exec"
 	"strings"
@@ -14,11 +15,20 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var tmplt *template.Template
 
 func init() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic("Error loading .env file")
+	}
+	// hashedPassword, _ := bcrypt.GenerateFromPassword(
+	// 	[]byte("password"), bcrypt.DefaultCost)
+	// println(string(hashedPassword))
 	tmplt = template.Must(template.ParseFiles("docker-env-template.txt"))
 }
 
@@ -26,12 +36,14 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.Default())
 
+	router.POST("/api/login", login) // public endpoint
+
+	router.Use(auth.JwtAuthMiddleware()) // protected
 	router.GET("/api/tenants", getTenants)
 	router.GET("/api/tenants/:name", getTenantDockerInfo)
 	router.DELETE("/api/tenants/:name", removeTenant)
-	router.GET("/api/containers/:name", getContainerLogs)
 	router.POST("/api/tenants", addTenant)
-	router.POST("/api/login", login)
+	router.GET("/api/containers/:name", getContainerLogs)
 
 	router.Run(":8081")
 }
@@ -206,14 +218,28 @@ func removeTenant(c *gin.Context) {
 
 func login(c *gin.Context) {
 	var userIn user
-
 	if err := c.BindJSON(&userIn); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, err.Error())
 	} else {
+		// Check credentials
+		if userIn.Email != "admin" ||
+			bcrypt.CompareHashAndPassword([]byte(os.Getenv("ADM_PASSWORD")), []byte(userIn.Password)) != nil {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid credentials"})
+			return
+		}
+
+		// Generate token
+		token, err := auth.GenerateToken(userIn.Email)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		// Respond
 		response := make(map[string]map[string]string)
 		response["account"] = make(map[string]string)
 		response["account"]["Email"] = userIn.Email
-		response["account"]["token"] = userIn.Password
+		response["account"]["token"] = token
 		response["account"]["isTenant"] = "true"
 		c.IndentedJSON(http.StatusOK, response)
 	}
