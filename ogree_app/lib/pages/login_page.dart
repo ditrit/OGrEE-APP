@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:ogree_app/common/api.dart';
+import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -290,10 +290,10 @@ class _LoginPageState extends State<LoginPage> {
 
 String backendUrl = const String.fromEnvironment(
   'BACK_URLS',
-  defaultValue: 'http://localhost:8081,https://b.api.ogree.ditrit.io',
+  defaultValue: 'http://localhost:8082,https://b.api.ogree.ditrit.io',
 );
 
 bool allowBackChoice = const bool.fromEnvironment(
   'ALLOW_SET_BACK',
-  defaultValue: false,
+  defaultValue: true,
 );

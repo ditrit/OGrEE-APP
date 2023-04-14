@@ -1,24 +1,38 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:ogree_app/models/domain.dart';
 import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/models/tenant.dart';
+import 'package:ogree_app/models/user.dart';
 
-String apiUrl = String.fromEnvironment(
+part 'api_tenant.dart';
+
+String apiUrl = "";
+String tenantUrl = "";
+const String apiUrlEnvSet = String.fromEnvironment(
   'API_URL',
-  defaultValue: 'http://localhost:8081',
+  defaultValue: 'http://localhost:3001',
 );
 var token = "";
+var tenantToken = "";
 getHeader(token) => {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       'Authorization': 'Bearer $token',
     };
 
-Future<List<Map<String, List<String>>>> fetchObjectsTree() async {
+Future<List<Map<String, List<String>>>> fetchObjectsTree(
+    {onlyDomain = false}) async {
   print("API get tree");
-  Uri url = Uri.parse('$apiUrl/api/hierarchy');
-  final response = await http.get(url, headers: getHeader(token));
+  String localUrl = '$apiUrl/api/hierarchy';
+  String localToken = token;
+  if (onlyDomain) {
+    localUrl = '$tenantUrl/api/hierarchy/domains';
+    localToken = tenantToken;
+  }
+  Uri url = Uri.parse(localUrl);
+  final response = await http.get(url, headers: getHeader(localToken));
   print(response.statusCode);
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response,
@@ -34,9 +48,11 @@ Future<List<Map<String, List<String>>>> fetchObjectsTree() async {
     for (var item in converted["tree"]!.keys) {
       tree[item.toString()] = List<String>.from(converted["tree"]![item]);
     }
-    for (var item in converted["categories"]!.keys) {
-      categories[item.toString()] =
-          List<String>.from(converted["categories"]![item]);
+    if (!onlyDomain) {
+      for (var item in converted["categories"]!.keys) {
+        categories[item.toString()] =
+            List<String>.from(converted["categories"]![item]);
+      }
     }
     return [tree, categories];
   } else {
@@ -226,47 +242,12 @@ Future<String> fetchContainerLogs(String name, {http.Client? client}) async {
   }
 }
 
-Future<Map<String, dynamic>> fetchTenantStats(String tenantUrl,
-    {http.Client? client}) async {
-  print("API get Tenant Stats $tenantUrl");
-  client ??= http.Client();
-  Uri url = Uri.parse('$tenantUrl/api/stats');
-  final response = await client.get(url);
-  print(response.statusCode);
-  if (response.statusCode == 200) {
-    print(response.body);
-    Map<String, dynamic> data = json.decode(response.body);
-    return data;
-  } else {
-    // If the server did not return a 200 OK response,
-    // then throw an exception.
-    throw Exception('${response.statusCode}: Failed to load objects');
-  }
-}
-
-Future<Map<String, dynamic>> fetchTenantApiVersion(String tenantUrl,
-    {http.Client? client}) async {
-  print("API get Tenant Version $tenantUrl");
-  client ??= http.Client();
-  Uri url = Uri.parse('$tenantUrl/api/version');
-  final response = await client.get(url);
-  print(response.statusCode);
-  if (response.statusCode == 200) {
-    print(response.body);
-    Map<String, dynamic> data = json.decode(response.body);
-    data = (Map<String, dynamic>.from(data["data"]));
-    return data;
-  } else {
-    // If the server did not return a 200 OK response,
-    // then throw an exception.
-    throw Exception('${response.statusCode}: Failed to load objects');
-  }
-}
-
 Future<List<String>> loginAPI(String email, String password,
     {String userUrl = ""}) async {
   if (userUrl != "") {
     apiUrl = userUrl;
+  } else {
+    apiUrl = apiUrlEnvSet;
   }
   print("API login $apiUrl");
   Uri url = Uri.parse('$apiUrl/api/login');
@@ -277,8 +258,27 @@ Future<List<String>> loginAPI(String email, String password,
     Map<String, dynamic> data = json.decode(response.body);
     data = (Map<String, dynamic>.from(data["account"]));
     token = data["token"]!;
-    return [data["Email"].toString(), data["isTenant"] ?? ""];
+    return [data["email"].toString(), data["isTenant"] ?? ""];
   } else {
     return [""];
+  }
+}
+
+Future<String> loginAPITenant(
+    String email, String password, String userUrl) async {
+  print("API login $userUrl");
+  Uri url = Uri.parse('$userUrl/api/login');
+  final response = await http.post(url,
+      body:
+          json.encode(<String, String>{'email': email, 'password': password}));
+  if (response.statusCode == 200) {
+    Map<String, dynamic> data = json.decode(response.body);
+    data = (Map<String, dynamic>.from(data["account"]));
+    tenantUrl = userUrl;
+    tenantToken = data["token"]!;
+    return data["token"]!;
+  } else {
+    print(response.statusCode);
+    return "";
   }
 }

@@ -39,7 +39,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
           useMaterial3: true,
           colorSchemeSeed: Colors.blue,
-          // fontFamily: GoogleFonts.inter().fontFamily,
+          fontFamily: GoogleFonts.inter().fontFamily,
           elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue.shade600,
@@ -50,12 +50,12 @@ class _MyAppState extends State<MyApp> {
               surfaceTintColor: Colors.white,
               color: Colors.white),
           textTheme: TextTheme(
-            headlineLarge: TextStyle(
+            headlineLarge: GoogleFonts.inter(
               fontSize: 22,
               color: Colors.black,
               fontWeight: FontWeight.w700,
             ),
-            headlineMedium: TextStyle(
+            headlineMedium: GoogleFonts.inter(
               fontSize: 17,
               color: Colors.black,
             ),

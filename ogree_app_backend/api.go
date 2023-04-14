@@ -34,7 +34,10 @@ func init() {
 
 func main() {
 	router := gin.Default()
-	router.Use(cors.Default())
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowAllOrigins = true
+	corsConfig.AllowHeaders = []string{"X-Requested-With", "Content-Type", "Authorization", "Origin", "Accept"}
+	router.Use(cors.New(corsConfig))
 
 	router.POST("/api/login", login) // public endpoint
 
@@ -45,7 +48,7 @@ func main() {
 	router.POST("/api/tenants", addTenant)
 	router.GET("/api/containers/:name", getContainerLogs)
 
-	router.Run(":8081")
+	router.Run(":8082")
 }
 
 type tenant struct {

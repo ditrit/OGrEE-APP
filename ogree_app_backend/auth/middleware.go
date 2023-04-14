@@ -15,6 +15,14 @@ func JwtAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		// if c.Request.Method == "OPTIONS" {
+		// 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		// 	c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+		// 	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept, Origin, X-Requested-With")
+		// 	c.AbortWithStatus(204)
+		// 	return
+		// }
+		// c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept, Origin, X-Requested-With")
 		c.Next()
 	}
 }

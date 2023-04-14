@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/widgets/tenants/create_domain_popup.dart';
 
 import '../app_controller.dart';
 
@@ -45,7 +47,7 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
           const _NodeActionsChip(),
           widget.isTenantMode
               ? Row(
-                  children: const [
+                  children: [
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 8.0),
                       child: CircleAvatar(
@@ -54,7 +56,13 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
                             splashRadius: 18,
                             iconSize: 14,
                             padding: EdgeInsets.all(2),
-                            onPressed: null,
+                            onPressed: () => showCustomPopup(
+                                context,
+                                CreateDomainPopup(
+                                  parentCallback: () => appController
+                                      .init({}, onlyDomain: true, reload: true),
+                                  domainId: nodeScope.node.id,
+                                )),
                             icon: Icon(
                               Icons.edit,
                               color: Colors.black,
