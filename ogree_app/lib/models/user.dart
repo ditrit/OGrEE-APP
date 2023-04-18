@@ -7,15 +7,14 @@ class User {
   String password;
   Map<String, String> roles;
 
-  User({
-    required this.email,
-    required this.password,
-    required this.roles,
-  });
+  User(
+      {required this.email,
+      required this.password,
+      required this.roles,
+      this.id});
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'id': id,
       'email': email,
       'password': password,
       'roles': roles,
@@ -24,6 +23,7 @@ class User {
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
+        id: map['_id'].toString(),
         email: map['email'].toString(),
         password: map['password'].toString(),
         roles: Map<String, String>.from(map['roles']));

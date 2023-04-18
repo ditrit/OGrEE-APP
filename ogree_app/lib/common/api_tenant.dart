@@ -85,12 +85,14 @@ Future<String> createDomain(Domain domain) async {
   }
 }
 
-Future<String> removeDomain(String name) async {
-  print("API create Domain");
-  Uri url = Uri.parse('$tenantUrl/api/domains/$name');
-  final response = await http.delete(url, headers: getHeader(tenantToken));
+Future<String> removeObject(String objName, String objType,
+    {http.Client? client}) async {
+  print("API delete object $objType");
+  client ??= http.Client();
+  Uri url = Uri.parse('$tenantUrl/api/$objType/$objName');
+  final response = await client.delete(url, headers: getHeader(tenantToken));
   print(response.statusCode);
-  if (response.statusCode >= 200 && response.statusCode < 300) {
+  if (response.statusCode == 200) {
     return "";
   } else {
     var data = json.decode(response.body);
@@ -110,5 +112,33 @@ Future<Domain?> fetchDomain(String name) async {
     return domain;
   } else {
     return null;
+  }
+}
+
+Future<String> updateDomain(String currentDomainId, Domain domain) async {
+  print("API update Domain");
+  Uri url = Uri.parse('$tenantUrl/api/domains/$currentDomainId');
+  final response = await http.put(url,
+      body: domain.toJson(), headers: getHeader(tenantToken));
+  print(response.statusCode);
+  if (response.statusCode == 200) {
+    return "";
+  } else {
+    var data = json.decode(response.body);
+    return data["message"].toString();
+  }
+}
+
+Future<String> updateUser(User user) async {
+  print("API update Domain");
+  Uri url = Uri.parse('$tenantUrl/api/domains/${user.id}');
+  final response =
+      await http.put(url, body: user.toJson(), headers: getHeader(tenantToken));
+  print(response.statusCode);
+  if (response.statusCode == 200) {
+    return "";
+  } else {
+    var data = json.decode(response.body);
+    return data["message"].toString();
   }
 }

@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/models/user.dart';
 
 class CreateUserPopup extends StatefulWidget {
   Function() parentCallback;
-  CreateUserPopup({super.key, required this.parentCallback});
+  User? modifyUser;
+  CreateUserPopup({super.key, required this.parentCallback, this.modifyUser});
 
   @override
   State<CreateUserPopup> createState() => _CreateUserPopupState();
@@ -25,6 +24,12 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
   List<String> roleList = <String>['Manager', 'User', 'Viewer'];
   List<String> selectedRole = [];
   List<Widget> domainRoleRows = [];
+  bool isEdit = false;
+  @override
+  void initState() {
+    super.initState();
+    isEdit = widget.modifyUser != null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +37,6 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
     return FutureBuilder(
         future: domainList == null ? getDomains() : null,
         builder: (context, _) {
-          print("buildamos");
           if (domainList == null) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -40,7 +44,7 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
             child: Container(
               // height: 240,
               width: 500,
-              margin: const EdgeInsets.symmetric(horizontal: 20),
+              margin: const EdgeInsets.symmetric(horizontal: 10),
               decoration: BoxDecoration(
                   color: Colors.white, borderRadius: BorderRadius.circular(20)),
               child: Padding(
@@ -54,7 +58,7 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          "Créer un nouveau user",
+                          isEdit ? "Modifier user" : "Créer un nouveau user",
                           style: TextStyle(
                             fontSize: 22,
                             color: Colors.black,
@@ -65,11 +69,15 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
                         getFormField(
                             save: (newValue) => _userName = newValue,
                             label: "Email",
-                            icon: Icons.alternate_email),
+                            icon: Icons.alternate_email,
+                            initial: isEdit ? widget.modifyUser!.email : null),
                         getFormField(
                             save: (newValue) => _userPassword = newValue,
                             label: "Mot de passe",
-                            icon: Icons.lock),
+                            icon: Icons.lock,
+                            initial:
+                                isEdit ? widget.modifyUser!.password : null,
+                            obscure: true),
                         Padding(
                           padding: const EdgeInsets.only(top: 20.0, bottom: 10),
                           child: Text("Permissions :"),
@@ -81,7 +89,6 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
                             alignment: Alignment.bottomLeft,
                             child: TextButton.icon(
                                 onPressed: () => setState(() {
-                                      print("CHAMOU");
                                       domainRoleRows.add(addDomainRoleRow(
                                           domainRoleRows.length));
                                     }),
@@ -108,42 +115,36 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
                                 onPressed: () async {
                                   if (_formKey.currentState!.validate()) {
                                     _formKey.currentState!.save();
-                                    Map<String, String> roles = {};
-                                    for (var i = 0;
-                                        i < selectedDomain.length;
-                                        i++) {
-                                      if (roles
-                                          .containsKey(selectedDomain[i])) {
-                                        showSnackBar(context,
-                                            "Only one role can be assigned per domain",
-                                            isError: true);
-                                        return;
-                                      }
-                                      roles[selectedDomain[i]] =
-                                          selectedRole[i].toLowerCase();
-                                    }
-                                    setState(() {
-                                      _isLoading = true;
-                                    });
-                                    var response = await createUser(User(
-                                        email: _userName!,
-                                        password: _userPassword!,
-                                        roles: roles));
-                                    if (response == "") {
-                                      widget.parentCallback();
-                                      showSnackBar(context, "User created 🥳",
-                                          isSuccess: true);
-                                      Navigator.of(context).pop();
-                                    } else {
+                                    try {
+                                      Map<String, String> roles = getRolesMap();
                                       setState(() {
-                                        _isLoading = false;
+                                        _isLoading = true;
                                       });
-                                      showSnackBar(context, response,
+                                      var response = await createUser(User(
+                                          email: _userName!,
+                                          password: _userPassword!,
+                                          roles: roles));
+                                      if (response == "") {
+                                        widget.parentCallback();
+                                        showSnackBar(context, "User created 🥳",
+                                            isSuccess: true);
+                                        Navigator.of(context).pop();
+                                      } else {
+                                        setState(() {
+                                          _isLoading = false;
+                                        });
+                                        showSnackBar(context, response,
+                                            isError: true);
+                                      }
+                                    } catch (e) {
+                                      showSnackBar(context, e.toString(),
                                           isError: true);
+                                      return;
                                     }
                                   }
                                 },
-                                label: Text(localeMsg.create),
+                                label: Text(
+                                    isEdit ? "Modifier" : localeMsg.create),
                                 icon: _isLoading
                                     ? Container(
                                         width: 24,
@@ -171,9 +172,29 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
     var list = await fetchObjectsTree(onlyDomain: true);
     domainList =
         list[0].values.reduce((value, element) => List.from(value + element));
-    if (domainList!.isNotEmpty) {
-      domainRoleRows.add(addDomainRoleRow(0));
+    if (isEdit) {
+      if (domainList!.isNotEmpty) {
+        domainRoleRows.add(addDomainRoleRow(0));
+      }
+    } else {
+      var roles = widget.modifyUser!.roles;
+      for (var i = 0; i < roles.length; i++) {
+        selectedDomain[i] = roles.keys.toList()[i];
+        selectedRole[i] = roles.values.toList()[i];
+        addDomainRoleRow(i, useDefaultValue: false);
+      }
     }
+  }
+
+  Map<String, String> getRolesMap() {
+    Map<String, String> roles = {};
+    for (var i = 0; i < selectedDomain.length; i++) {
+      if (roles.containsKey(selectedDomain[i])) {
+        throw Exception("Only one role can be assigned per domain");
+      }
+      roles[selectedDomain[i]] = selectedRole[i].toLowerCase();
+    }
+    return roles;
   }
 
   getFormField(
@@ -182,10 +203,15 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
       required IconData icon,
       String? prefix,
       String? suffix,
-      List<TextInputFormatter>? formatters}) {
+      List<TextInputFormatter>? formatters,
+      String? initial,
+      bool obscure = false}) {
     return Padding(
       padding: const EdgeInsets.only(left: 2, right: 10),
       child: TextFormField(
+        obscureText: obscure,
+        initialValue: initial,
+        readOnly: isEdit,
         onSaved: (newValue) => save(newValue),
         validator: (text) {
           if (text == null || text.isEmpty) {
@@ -195,7 +221,7 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
         },
         inputFormatters: formatters,
         decoration: InputDecoration(
-          icon: Icon(icon, color: Colors.blue.shade900),
+          icon: Icon(icon, color: isEdit ? Colors.grey : Colors.blue.shade900),
           labelText: label,
           prefixText: prefix,
           suffixText: suffix,
@@ -204,13 +230,22 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
     );
   }
 
-  addDomainRoleRow(int rowIdx) {
-    selectedDomain.add(domainList!.first);
-    selectedRole.add(roleList.first);
+  removeDomainRoleRow(int rowIdx) {
+    domainRoleRows.removeAt(rowIdx);
+    selectedDomain.removeAt(rowIdx);
+    selectedRole.removeAt(rowIdx);
+  }
+
+  addDomainRoleRow(int rowIdx, {bool useDefaultValue = true}) {
+    if (useDefaultValue) {
+      selectedDomain.add(domainList!.first);
+      selectedRole.add(roleList.first);
+    }
     return StatefulBuilder(builder: (context, _setState) {
       return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
+          SizedBox(width: 20),
           DropdownButton<String>(
             value: selectedDomain[rowIdx],
             items: domainList!.map<DropdownMenuItem<String>>((String value) {
@@ -221,14 +256,16 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
             }).toList(),
             onChanged: (String? value) {
               _setState(() {
-                print("changeeee domain");
                 selectedDomain[rowIdx] = value!;
               });
             },
           ),
-          Icon(
-            Icons.arrow_forward,
-            color: Colors.blue.shade900,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Icon(
+              Icons.arrow_forward,
+              color: Colors.blue.shade900,
+            ),
           ),
           DropdownButton<String>(
             value: selectedRole[rowIdx],
@@ -243,7 +280,17 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
                 selectedRole[rowIdx] = value!;
               });
             },
-          )
+          ),
+          rowIdx > 0
+              ? IconButton(
+                  splashRadius: 16,
+                  iconSize: 14,
+                  onPressed: () => setState(() => removeDomainRoleRow(rowIdx)),
+                  icon: Icon(
+                    Icons.delete,
+                    color: Colors.red.shade400,
+                  ))
+              : Container()
         ],
       );
     });

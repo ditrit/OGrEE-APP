@@ -27,6 +27,7 @@ class _CreateDomainPopupState extends State<CreateDomainPopup> {
   bool _isLoadingDelete = false;
   bool _isEdit = false;
   Domain? domain;
+  String? domainId;
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +47,14 @@ class _CreateDomainPopupState extends State<CreateDomainPopup> {
 
   getDomain() async {
     domain = await fetchDomain(widget.domainId!);
+    if (domain == null) {
+      showSnackBar(context, "Unable to retrieve domain", isError: true);
+      Navigator.of(context).pop();
+      return;
+    }
+    domainId = domain!.parent == ""
+        ? domain!.name
+        : "${domain!.parent}.${domain!.name}";
     _localColor = Color(int.parse("0xFF${domain!.color}"));
   }
 
@@ -78,7 +87,7 @@ class _CreateDomainPopupState extends State<CreateDomainPopup> {
                   const Divider(height: 45),
                   getFormField(
                       save: (newValue) => _domainParent = newValue,
-                      label: "Domain Parent",
+                      label: "Parent Domain",
                       icon: Icons.auto_awesome_mosaic,
                       initialValue: _isEdit ? domain!.parent : null,
                       noValidation: true),
@@ -87,6 +96,11 @@ class _CreateDomainPopupState extends State<CreateDomainPopup> {
                       label: "Nom du domain",
                       icon: Icons.auto_awesome_mosaic,
                       initialValue: _isEdit ? domain!.name : null),
+                  getFormField(
+                      save: (newValue) => _domainDescription = newValue,
+                      label: "Description",
+                      icon: Icons.message,
+                      initialValue: _isEdit ? domain!.description : null),
                   getFormField(
                       save: (newValue) => _domainColor = newValue,
                       label: "Couleur",
@@ -97,11 +111,6 @@ class _CreateDomainPopupState extends State<CreateDomainPopup> {
                       ],
                       isColor: true,
                       initialValue: _isEdit ? domain!.color : null),
-                  getFormField(
-                      save: (newValue) => _domainDescription = newValue,
-                      label: "Description",
-                      icon: Icons.message,
-                      initialValue: _isEdit ? domain!.description : null),
                   const SizedBox(height: 40),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -129,8 +138,8 @@ class _CreateDomainPopupState extends State<CreateDomainPopup> {
                                     setState(() {
                                       _isLoadingDelete = true;
                                     });
-                                    var response =
-                                        await removeDomain(_domainName!);
+                                    var response = await removeObject(
+                                        domainId!, "domains");
                                     if (response == "") {
                                       widget.parentCallback();
                                       showSnackBar(context, "Domain supprimé");
@@ -166,11 +175,15 @@ class _CreateDomainPopupState extends State<CreateDomainPopup> {
                             setState(() {
                               _isLoading = true;
                             });
-                            var response = await createDomain(Domain(
-                                _domainName!,
-                                _domainColor!,
-                                _domainDescription!,
-                                _domainParent!));
+                            var newDomain = Domain(_domainName!, _domainColor!,
+                                _domainDescription!, _domainParent!);
+                            String response;
+                            if (_isEdit) {
+                              response =
+                                  await updateDomain(domainId!, newDomain);
+                            } else {
+                              response = await createDomain(newDomain);
+                            }
                             if (response == "") {
                               widget.parentCallback();
                               showSnackBar(

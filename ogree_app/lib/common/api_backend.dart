@@ -188,10 +188,10 @@ Future<String> createTenant(Tenant tenant) async {
   }
 }
 
-Future<String> deleteTenant(String tenantName, {http.Client? client}) async {
+Future<String> deleteTenant(String objName, {http.Client? client}) async {
   print("API delete Tenant");
   client ??= http.Client();
-  Uri url = Uri.parse('$apiUrl/api/tenants/$tenantName');
+  Uri url = Uri.parse('$apiUrl/api/tenants/$objName');
   final response = await client.delete(url, headers: getHeader(token));
   print(response.statusCode);
   if (response.statusCode == 200) {

@@ -49,9 +49,10 @@ class TenantCard extends StatelessWidget {
                         padding: const EdgeInsets.all(2),
                         onPressed: () => showCustomPopup(
                             context,
-                            DeleteTenantDialog(
-                              tenantName: tenant.name,
+                            DeleteDialog(
+                              objName: [tenant.name],
                               parentCallback: parentCallback,
+                              objType: "tenants",
                             ),
                             isDismissible: true),
                         icon: Icon(
@@ -121,17 +122,21 @@ class TenantCard extends StatelessWidget {
   }
 }
 
-class DeleteTenantDialog extends StatefulWidget {
-  final String tenantName;
+class DeleteDialog extends StatefulWidget {
+  final List<String> objName;
+  final String objType;
   final Function parentCallback;
-  const DeleteTenantDialog(
-      {super.key, required this.tenantName, required this.parentCallback});
+  const DeleteDialog(
+      {super.key,
+      required this.objName,
+      required this.parentCallback,
+      required this.objType});
 
   @override
-  State<DeleteTenantDialog> createState() => _DeleteTenantDialogState();
+  State<DeleteDialog> createState() => _DeleteDialogState();
 }
 
-class _DeleteTenantDialogState extends State<DeleteTenantDialog> {
+class _DeleteDialogState extends State<DeleteDialog> {
   bool _isLoading = false;
 
   @override
@@ -155,7 +160,7 @@ class _DeleteTenantDialogState extends State<DeleteTenantDialog> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 40),
                   child: Text(
-                      "Toutes les données du tenant seront définitivement perdues !"),
+                      "Toutes les données seront définitivement perdues !"),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -165,17 +170,24 @@ class _DeleteTenantDialogState extends State<DeleteTenantDialog> {
                           foregroundColor: Colors.red.shade900),
                       onPressed: () async {
                         setState(() => _isLoading = true);
-                        var response = await deleteTenant(widget.tenantName);
-                        setState(() => _isLoading = false);
-                        if (response == "") {
-                          widget.parentCallback();
-                          Navigator.of(context).pop();
-                          showSnackBar(context, "Tenant successfully deleted");
-                        } else {
-                          showSnackBar(context, "Error: " + response);
+                        for (var obj in widget.objName) {
+                          String response;
+                          if (widget.objType == "tenants") {
+                            response = await deleteTenant(obj);
+                          } else {
+                            response = await removeObject(obj, widget.objType);
+                          }
+                          if (response != "") {
+                            showSnackBar(context, "Error: " + response);
+                            return;
+                          }
                         }
+                        setState(() => _isLoading = false);
+                        widget.parentCallback();
+                        Navigator.of(context).pop();
+                        showSnackBar(context, "Successfully deleted");
                       },
-                      label: Text("Supprimer Tenant"),
+                      label: Text("Supprimer"),
                       icon: _isLoading
                           ? Container(
                               width: 24,

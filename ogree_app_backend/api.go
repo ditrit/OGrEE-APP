@@ -4,12 +4,14 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"ogree_app_backend/auth"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -33,6 +35,8 @@ func init() {
 }
 
 func main() {
+	port := flag.Int("port", 8082, "an int")
+	flag.Parse()
 	router := gin.Default()
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
@@ -48,7 +52,7 @@ func main() {
 	router.POST("/api/tenants", addTenant)
 	router.GET("/api/containers/:name", getContainerLogs)
 
-	router.Run(":8082")
+	router.Run(":" + strconv.Itoa(*port))
 }
 
 type tenant struct {

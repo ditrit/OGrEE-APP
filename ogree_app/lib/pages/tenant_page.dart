@@ -16,6 +16,7 @@ import 'package:ogree_app/widgets/select_objects/app_controller.dart';
 import 'package:ogree_app/widgets/select_objects/settings_view/settings_view.dart';
 import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
 import 'package:ogree_app/widgets/select_objects/tree_view/custom_tree_view.dart';
+import 'package:ogree_app/widgets/tenants/tenant_card.dart';
 
 class TenantPage extends StatefulWidget {
   final String userEmail;
@@ -43,6 +44,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
   );
   bool _loadUsers = true;
   bool _reloadDomains = false;
+  List<User> selectedUsers = [];
 
   @override
   void initState() {
@@ -255,6 +257,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
             return const Center(child: CircularProgressIndicator());
           }
           _loadUsers = false;
+          print("Rebuild users view");
           return Theme(
             data: ThemeData(
               cardTheme: const CardTheme(
@@ -281,6 +284,56 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                 )),
                 actions: [
                   Padding(
+                    padding: const EdgeInsets.only(right: 4.0),
+                    child: IconButton(
+                        splashRadius: 23,
+                        // iconSize: 14,
+                        onPressed: () => selectedUsers.length > 0
+                            ? showCustomPopup(
+                                context,
+                                CreateUserPopup(
+                                  parentCallback: () {
+                                    setState(() {
+                                      _loadUsers = true;
+                                    });
+                                  },
+                                  modifyUser: selectedUsers.first,
+                                ),
+                                isDismissible: true)
+                            : null,
+                        icon: Icon(
+                          Icons.edit,
+                          // color: Colors.red.shade900,
+                        )),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: IconButton(
+                        splashRadius: 23,
+                        // iconSize: 14,
+                        onPressed: () => selectedUsers.length > 0
+                            ? showCustomPopup(
+                                context,
+                                DeleteDialog(
+                                  objName: selectedUsers.map((e) {
+                                    print(e);
+                                    return e.id!;
+                                  }).toList(),
+                                  objType: "users",
+                                  parentCallback: () {
+                                    setState(() {
+                                      _loadUsers = true;
+                                    });
+                                  },
+                                ),
+                                isDismissible: true)
+                            : null,
+                        icon: Icon(
+                          Icons.delete,
+                          color: Colors.red.shade900,
+                        )),
+                  ),
+                  Padding(
                     padding: const EdgeInsets.only(right: 6.0),
                     child: ElevatedButton.icon(
                       onPressed: () => showCustomPopup(context,
@@ -295,8 +348,6 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                   ),
                 ],
                 rowsPerPage: _users.length >= 6 ? 6 : _users.length,
-                // sortColumnIndex: sortColumnIndex > 0 ? sortColumnIndex : null,
-                // sortAscending: sort,
                 columns: const [
                   DataColumn(
                       label: Text(
@@ -309,11 +360,21 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ))
                 ],
-                source: _DataSource(context, _users),
+                source: _DataSource(context, _users, onUserSelected),
               ),
             ),
           );
         });
+  }
+
+  onUserSelected(int index, bool value) {
+    if (index < 0) {
+      selectedUsers = [];
+    } else if (value) {
+      selectedUsers.add(_users[index]);
+    } else {
+      selectedUsers.remove(_users[index]);
+    }
   }
 
   lockedView() {
@@ -439,9 +500,10 @@ class _Row {
 
 class _DataSource extends DataTableSource {
   List<User> users;
-  _DataSource(this.context, this.users) {
-    print("AQUIIIII");
+  final Function onRowSelected;
+  _DataSource(this.context, this.users, this.onRowSelected) {
     _rows = getChildren();
+    onRowSelected(-1, false);
   }
   final BuildContext context;
   late List<_Row> _rows;
@@ -457,11 +519,13 @@ class _DataSource extends DataTableSource {
       index: index,
       selected: row.selected,
       onSelectChanged: (value) {
+        print("hello selection");
         if (row.selected != value) {
           _selectedCount += value! ? 1 : -1;
           assert(_selectedCount >= 0);
           row.selected = value;
           notifyListeners();
+          onRowSelected(index, value);
         }
       },
       cells: row.cells,
@@ -479,7 +543,7 @@ class _DataSource extends DataTableSource {
 
   List<_Row> getChildren() {
     List<_Row> children = [];
-
+    print("### Get children");
     for (var user in users) {
       List<DataCell> row = [];
       row.add(label(user.email, fontWeight: FontWeight.w500));
