@@ -109,27 +109,27 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                     ],
                   ),
                   getFormField(
-                      save: (newValue) {
-                        var splitted = newValue!.split(":");
-                        _apiUrl = splitted[0];
-                        _apiPort = splitted[1];
-                      },
-                      label: "New API Port",
-                      icon: Icons.cloud,
-                      prefix: "http://",
-                      isUrl: true,
-                      formatters: [FilteringTextInputFormatter.digitsOnly]),
+                    save: (newValue) {
+                      var splitted = newValue!.split(":");
+                      _apiUrl = splitted[0];
+                      _apiPort = splitted[1];
+                    },
+                    label: "New API URL (hostname:port)",
+                    icon: Icons.cloud,
+                    prefix: "http://",
+                    isUrl: true,
+                  ),
                   getFormField(
-                      save: (newValue) {
-                        var splitted = newValue!.split(":");
-                        _webUrl = splitted[0];
-                        _webPort = splitted[1];
-                      },
-                      label: "New Web Port",
-                      icon: Icons.monitor,
-                      prefix: "http://",
-                      isUrl: true,
-                      formatters: [FilteringTextInputFormatter.digitsOnly]),
+                    save: (newValue) {
+                      var splitted = newValue!.split(":");
+                      _webUrl = splitted[0];
+                      _webPort = splitted[1];
+                    },
+                    label: "New Web URL (hostname:port)",
+                    icon: Icons.monitor,
+                    prefix: "http://",
+                    isUrl: true,
+                  ),
                   const SizedBox(height: 40),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -158,7 +158,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                   _apiUrl!,
                                   _webUrl!,
                                   _apiPort!,
-                                  _apiUrl!,
+                                  _webPort!,
                                   _hasWeb,
                                   _hasCli));
                               if (response == "") {
@@ -219,7 +219,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
             if (splitted.length != 2) {
               return "Wrong format for URL: expected host:port";
             }
-            if (int.tryParse(splitted[1]) != null) {
+            if (int.tryParse(splitted[1]) == null) {
               return "Wrong format for URL: port should only have digits";
             }
           }
