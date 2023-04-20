@@ -87,7 +87,7 @@ class TenantCard extends StatelessWidget {
                     child: Text("API URL:"),
                   ),
                   Text(
-                    "http://localhost:${tenant.apiUrl}",
+                    "http://${tenant.apiUrl}:${tenant.apiPort}",
                     style: TextStyle(backgroundColor: Colors.grey.shade200),
                   ),
                 ],
@@ -100,7 +100,7 @@ class TenantCard extends StatelessWidget {
                     child: Text("Web URL:"),
                   ),
                   Text(
-                    "http://localhost:${tenant.webUrl}",
+                    "http://${tenant.webUrl}:${tenant.webPort}",
                     style: TextStyle(backgroundColor: Colors.grey.shade200),
                   ),
                 ],
@@ -109,7 +109,8 @@ class TenantCard extends StatelessWidget {
                 alignment: Alignment.bottomRight,
                 child: TextButton.icon(
                     onPressed: () {
-                      launchUrl(Uri.parse("http://localhost:${tenant.webUrl}"));
+                      launchUrl(Uri.parse(
+                          "http://${tenant.webUrl}:${tenant.webPort}"));
                     },
                     icon: const Icon(Icons.play_circle),
                     label: Text(localeMsg.launch)),

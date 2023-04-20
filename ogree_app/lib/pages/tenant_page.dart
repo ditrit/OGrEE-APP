@@ -180,9 +180,9 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
 
   getTenantStats() async {
     _tenantStats = await fetchTenantStats(
-        "http://localhost:${widget.tenant.apiUrl}", _apiToken);
+        "http://${widget.tenant.apiUrl}:${widget.tenant.apiPort}", _apiToken);
     Map<String, dynamic> versionStats = await fetchTenantApiVersion(
-        "http://localhost:${widget.tenant.apiUrl}", _apiToken);
+        "http://${widget.tenant.apiUrl}:${widget.tenant.apiPort}", _apiToken);
     for (var key in versionStats.keys) {
       if (key.contains("Build")) {
         _tenantStats!["API$key"] = versionStats[key];
@@ -246,7 +246,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
 
   getUsers() async {
     _users = await fetchApiUsers(
-        "http://localhost:${widget.tenant.apiUrl}", _apiToken);
+        "http://${widget.tenant.apiUrl}:${widget.tenant.apiPort}", _apiToken);
   }
 
   usersView() {
@@ -470,8 +470,8 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
   tryLogin(formKey) {
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
-      loginAPITenant(
-              _email!, _password!, "http://localhost:${widget.tenant.apiUrl}")
+      loginAPITenant(_email!, _password!,
+              "http://${widget.tenant.apiUrl}:${widget.tenant.apiPort}")
           .then((value) => value != ""
               ? setState(() {
                   print(_apiToken);

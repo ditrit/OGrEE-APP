@@ -106,8 +106,11 @@ func getTenants(c *gin.Context) {
 			} else {
 				file.WriteString("[]")
 				file.Sync()
-				data = []byte{}
 				defer file.Close()
+				response := make(map[string][]tenant)
+				response["tenants"] = []tenant{}
+				c.IndentedJSON(http.StatusOK, response)
+				return
 			}
 		} else {
 			panic(e.Error())
