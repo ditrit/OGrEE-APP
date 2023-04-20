@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/pages/login_page.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 import 'package:ogree_app/widgets/language_toggle.dart';
+
+import '../widgets/tenants/create_server_popup.dart';
 
 AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
   logout() => Navigator.of(context).push(
@@ -22,8 +25,9 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
       ),
       onPressed: () => Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) =>
-              ProjectsPage(userEmail: userEmail, isTenantMode: isTenantMode),
+          builder: (context) => ProjectsPage(
+              userEmail: isTenantMode ? "admin" : userEmail,
+              isTenantMode: isTenantMode),
         ),
       ),
     )),
@@ -34,11 +38,22 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
       ),
       const SizedBox(width: 20),
       PopupMenuButton<String>(
-          onSelected: (_) => logout(),
+          onSelected: (value) {
+            if (value == "logout") {
+              logout();
+            } else {
+              showCustomPopup(
+                  context, CreateServerPopup(parentCallback: () {}));
+            }
+          },
           itemBuilder: (_) => <PopupMenuEntry<String>>[
                 PopupMenuItem(
                   value: "logout",
                   child: Text("Logout"),
+                ),
+                PopupMenuItem(
+                  value: "new",
+                  child: Text("Add new server"),
                 ),
               ],
           child: Row(
@@ -49,7 +64,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
               ),
               const SizedBox(width: 10),
               Text(
-                userEmail,
+                isTenantMode ? "admin" : userEmail,
                 style: TextStyle(color: Colors.white),
               ),
             ],

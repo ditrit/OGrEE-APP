@@ -14,11 +14,15 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/pkg/sftp"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/knownhosts"
 )
 
 var tmplt *template.Template
@@ -51,8 +55,10 @@ func main() {
 	router.DELETE("/api/tenants/:name", removeTenant)
 	router.POST("/api/tenants", addTenant)
 	router.GET("/api/containers/:name", getContainerLogs)
+	router.POST("/api/servers", createNewBackend)
 
 	router.Run(":" + strconv.Itoa(*port))
+
 }
 
 type tenant struct {
@@ -62,6 +68,8 @@ type tenant struct {
 	WebUrl           string `json:"webUrl"`
 	ApiPort          string `json:"apiPort"`
 	WebPort          string `json:"webPort"`
+	HasWeb           bool   `json:"hasWeb"`
+	HasCli           bool   `json:"hasCli"`
 }
 
 type container struct {
@@ -79,10 +87,31 @@ type user struct {
 	Token    string `json:"token"`
 }
 
+type backendServer struct {
+	Host     string `json:"host" binding:"required"`
+	User     string `json:"user" binding:"required"`
+	Password string `json:"password"`
+	Pkey     string `json:"pkey"`
+	DstPath  string `json:"dstpath" binding:"required"`
+	RunPort  string `json:"runport" binding:"required"`
+}
+
 func getTenants(c *gin.Context) {
 	data, e := ioutil.ReadFile("tenants.json")
 	if e != nil {
-		panic(e.Error())
+		if strings.Contains(e.Error(), "no such file") {
+			var file, e = os.Create("tenants.json")
+			if e != nil {
+				panic(e.Error())
+			} else {
+				file.WriteString("[]")
+				file.Sync()
+				data = []byte{}
+				defer file.Close()
+			}
+		} else {
+			panic(e.Error())
+		}
 	}
 	var listTenants []tenant
 	json.Unmarshal(data, &listTenants)
@@ -172,7 +201,18 @@ func addTenant(c *gin.Context) {
 		file.Close()
 
 		// Docker compose up
-		cmd := exec.Command("docker-compose", "-p", strings.ToLower(newTenant.Name), "up", "-d")
+		args := []string{"-p", strings.ToLower(newTenant.Name)}
+		if newTenant.HasWeb {
+			args = append(args, "--profile")
+			args = append(args, "web")
+		}
+		if newTenant.HasCli {
+			args = append(args, "--profile")
+			args = append(args, "cli")
+		}
+		args = append(args, "up")
+		args = append(args, "-d")
+		cmd := exec.Command("docker-compose", args...)
 		cmd.Dir = "docker/"
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
@@ -249,5 +289,143 @@ func login(c *gin.Context) {
 		response["account"]["token"] = token
 		response["account"]["isTenant"] = "true"
 		c.IndentedJSON(http.StatusOK, response)
+	}
+}
+
+func createNewBackend(c *gin.Context) {
+	// host := "chibois.net:2225"
+	// user := "helder"
+	// pwd := "<password>"
+	var newServer backendServer
+	if err := c.BindJSON(&newServer); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var err error
+	var signer ssh.Signer
+	var homeDir string
+
+	pKey, err := ioutil.ReadFile(newServer.Pkey)
+	if err != nil {
+		fmt.Println("Failed to read ssh_host_key")
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	signer, err = ssh.ParsePrivateKey(pKey)
+	if err != nil {
+		fmt.Println(err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	homeDir, err = os.UserHomeDir()
+	if err != nil {
+		fmt.Println(err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	var hostkeyCallback ssh.HostKeyCallback
+	hostkeyCallback, err = knownhosts.New(homeDir + "/.ssh/known_hosts")
+	if err != nil {
+		fmt.Println(err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	conf := &ssh.ClientConfig{
+		User:            newServer.User,
+		HostKeyCallback: hostkeyCallback,
+		Auth: []ssh.AuthMethod{
+			ssh.Password(newServer.Password),
+			ssh.PublicKeys(signer),
+		},
+	}
+
+	var conn *ssh.Client
+
+	conn, err = ssh.Dial("tcp", newServer.Host, conf)
+	if err != nil {
+		fmt.Println(err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	defer conn.Close()
+
+	SSHRunCmd("mkdir "+newServer.DstPath+"/docker", conn, true)
+
+	SSHCopyFile("ogree_app_backend_linux", newServer.DstPath+"/ogree_app_backend", conn)
+	SSHCopyFile("docker-env-template.txt", newServer.DstPath+"/docker-env-template.txt", conn)
+	SSHCopyFile(".env", newServer.DstPath+"/.env", conn)
+	SSHCopyFile("docker/docker-compose.yml", newServer.DstPath+"/docker/docker-compose.yml", conn)
+	SSHCopyFile("docker/addCustomer.js", newServer.DstPath+"/docker/addCustomer.js", conn)
+	SSHCopyFile("docker/addCustomer.sh", newServer.DstPath+"/docker/addCustomer.sh", conn)
+	SSHCopyFile("docker/dbft.js", newServer.DstPath+"/docker/dbft.js", conn)
+	SSHCopyFile("docker/init.sh", newServer.DstPath+"/docker/init.sh", conn)
+
+	SSHRunCmd("chmod +x "+newServer.DstPath+"/ogree_app_backend", conn, true)
+	SSHRunCmd("cd "+newServer.DstPath+" && nohup "+newServer.DstPath+"/ogree_app_backend -port 2231 > "+newServer.DstPath+"/ogree_backend.out", conn, false)
+
+	c.String(http.StatusOK, "all good")
+}
+
+func SSHCopyFile(srcPath, dstPath string, client *ssh.Client) error {
+	// open an SFTP session over an existing ssh connection.
+	sftp, err := sftp.NewClient(client)
+	if err != nil {
+		return err
+	}
+	defer sftp.Close()
+
+	// Open the source file
+	srcFile, err := os.Open(srcPath)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	// Create the destination file
+	dstFile, err := sftp.Create(dstPath)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	// write to file
+	if _, err := dstFile.ReadFrom(srcFile); err != nil {
+		return err
+	}
+	return nil
+}
+
+func SSHRunCmd(cmd string, client *ssh.Client, wait bool) {
+	session, err := client.NewSession()
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer session.Close()
+
+	var buff bytes.Buffer
+	session.Stdout = &buff
+	// var buff2 bytes.Buffer
+	// session.Stderr = &buff2
+	if !wait {
+		println(cmd)
+		// if err := session.Run(cmd); err != nil {
+		// 	fmt.Println(err.Error())
+		// 	fmt.Println(buff.String())
+		// 	fmt.Println(buff2.String())
+		// }
+		session.Start(cmd)
+		time.Sleep(2 * time.Second)
+		session.Close()
+		println("out")
+
+	} else {
+		if err := session.Run(cmd); err != nil {
+			fmt.Println(err)
+			fmt.Println(buff.String())
+		}
 	}
 }

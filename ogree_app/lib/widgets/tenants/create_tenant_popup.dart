@@ -20,6 +20,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
   String? _tenantPassword;
   String? _apiUrl;
   String? _webUrl;
+  bool _hasWeb = true;
+  bool _hasCli = true;
   bool _isLoading = false;
 
   @override
@@ -64,6 +66,42 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                       save: (newValue) => _tenantPassword = newValue,
                       label: "Tenant Admin Password",
                       icon: Icons.lock),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    alignment: WrapAlignment.start,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text("Services:"),
+                      SizedBox(
+                        width: 112,
+                        child: CheckboxListTile(
+                          controlAffinity: ListTileControlAffinity.leading,
+                          value: true,
+                          enabled: false,
+                          onChanged: (_) {},
+                          title: Text("API"),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 120,
+                        child: CheckboxListTile(
+                          controlAffinity: ListTileControlAffinity.leading,
+                          value: _hasWeb,
+                          onChanged: (value) => _hasWeb = value!,
+                          title: Text("WEB"),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 112,
+                        child: CheckboxListTile(
+                          controlAffinity: ListTileControlAffinity.leading,
+                          value: _hasCli,
+                          onChanged: (value) => _hasCli = value!,
+                          title: Text("CLI"),
+                        ),
+                      ),
+                    ],
+                  ),
                   getFormField(
                       save: (newValue) => _apiUrl = newValue,
                       label: "New API Port",
@@ -102,7 +140,9 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                   _tenantName!,
                                   _tenantPassword!,
                                   _apiUrl!,
-                                  _webUrl!));
+                                  _webUrl!,
+                                  _hasWeb,
+                                  _hasCli));
                               if (response == "") {
                                 widget.parentCallback();
                                 showSnackBar(

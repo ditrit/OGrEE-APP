@@ -188,6 +188,19 @@ Future<String> createTenant(Tenant tenant) async {
   }
 }
 
+Future<String> createBackendServer(Map<String, String> newBackend) async {
+  print("API create Back Server");
+  Uri url = Uri.parse('$apiUrl/api/servers');
+  final response = await http.post(url,
+      body: json.encode(newBackend), headers: getHeader(token));
+  print(response);
+  if (response.statusCode == 200) {
+    return "";
+  } else {
+    return "Error creating backend ${response.body}";
+  }
+}
+
 Future<String> deleteTenant(String objName, {http.Client? client}) async {
   print("API delete Tenant");
   client ??= http.Client();

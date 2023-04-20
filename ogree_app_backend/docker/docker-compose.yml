@@ -1,8 +1,8 @@
 version: '3.9'
 services:
   dbft_api:
-    # build: ${APIBUILDDIR}#${APIBRANCH}
-    build: ../../../OGrEE-API
+    build: ${APIBUILDDIR}#${APIBRANCH}
+    # build: ../../../OGrEE-API
     image: dbft/api:dockerfile
     container_name: ${COMPOSE_PROJECT_NAME}_api
     entrypoint: /home/main
@@ -61,6 +61,7 @@ services:
    build: ${CLIBUILDDIR}#${CLIBRANCH}
   #  build: ${LOCAL_CLI_BUILD_DIR}
    image: dbft/cli:dockerfile
+   profiles: ["cli"]
    container_name: ${COMPOSE_PROJECT_NAME}_cli
    tty: true
    environment:
@@ -98,8 +99,9 @@ services:
       context: ${APPBUILDDIR}#${APPBRANCH}
       # context: ../../
       args:
-      - API_URL=localhost:${APIPORT}
+      - API_URL=http://localhost:${APIPORT}
     image: dbft/webapp:dockerfile
+    profiles: ["web"]
     container_name: ${COMPOSE_PROJECT_NAME}_webapp
     ports:
       - ${WEBPORT}:80
