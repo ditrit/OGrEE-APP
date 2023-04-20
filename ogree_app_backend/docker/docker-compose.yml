@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   dbft_api:
-    build: ${APIBUILDDIR}#${APIBRANCH}
+    build: ${APICLIBUILDDIR}#${APIBRANCH}:API
     # build: ../../../OGrEE-API
     image: dbft/api:dockerfile
     container_name: ${COMPOSE_PROJECT_NAME}_api
@@ -58,7 +58,7 @@ services:
   # by using the container's shell
   # The cli binary is found @ /home/cli
   dbft_cli:
-   build: ${CLIBUILDDIR}#${CLIBRANCH}
+   build: ${APICLIBUILDDIR}#${CLIBRANCH}:CLI
   #  build: ${LOCAL_CLI_BUILD_DIR}
    image: dbft/cli:dockerfile
    profiles: ["cli"]
