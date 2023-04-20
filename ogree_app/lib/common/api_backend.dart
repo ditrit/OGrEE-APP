@@ -262,7 +262,7 @@ Future<List<String>> loginAPI(String email, String password,
   } else {
     apiUrl = apiUrlEnvSet;
   }
-  print("API login $apiUrl");
+  print("API login ogree $apiUrl");
   Uri url = Uri.parse('$apiUrl/api/login');
   final response = await http.post(url,
       body:
@@ -279,7 +279,7 @@ Future<List<String>> loginAPI(String email, String password,
 
 Future<String> loginAPITenant(
     String email, String password, String userUrl) async {
-  print("API login $userUrl");
+  print("API login to ogree-api $userUrl");
   Uri url = Uri.parse('$userUrl/api/login');
   final response = await http.post(url,
       body:
