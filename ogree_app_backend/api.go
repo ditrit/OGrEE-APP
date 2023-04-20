@@ -265,23 +265,16 @@ func removeTenant(c *gin.Context) {
 
 func login(c *gin.Context) {
 	var userIn user
-
-	println("Login")
-
 	if err := c.BindJSON(&userIn); err != nil {
 		println("ERROR:")
 		println(err.Error())
-		c.IndentedJSON(http.StatusForbidden, err.Error())
-		mapbody := make(map[string]string)
-		jsonData, _ := ioutil.ReadAll(c.Request.Body)
-		json.Unmarshal(jsonData, &mapbody)
-		fmt.Println(mapbody)
+		c.IndentedJSON(http.StatusBadRequest, err.Error())
 	} else {
 		// Check credentials
 		if userIn.Email != "admin" ||
 			bcrypt.CompareHashAndPassword([]byte(os.Getenv("ADM_PASSWORD")), []byte(userIn.Password)) != nil {
 			println("Credentials error")
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid credentials"})
+			c.IndentedJSON(http.StatusForbidden, gin.H{"error": "Invalid credentials"})
 			return
 		}
 
@@ -304,9 +297,6 @@ func login(c *gin.Context) {
 }
 
 func createNewBackend(c *gin.Context) {
-	// host := "chibois.net:2225"
-	// user := "helder"
-	// pwd := "<password>"
 	var newServer backendServer
 	if err := c.BindJSON(&newServer); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, err.Error())
@@ -364,7 +354,7 @@ func createNewBackend(c *gin.Context) {
 	}
 	defer conn.Close()
 
-	SSHRunCmd("mkdir "+newServer.DstPath+"/docker", conn, true)
+	SSHRunCmd("mkdir -p "+newServer.DstPath+"/docker", conn, true)
 
 	SSHCopyFile("ogree_app_backend_linux", newServer.DstPath+"/ogree_app_backend", conn)
 	SSHCopyFile("docker-env-template.txt", newServer.DstPath+"/docker-env-template.txt", conn)
@@ -376,7 +366,7 @@ func createNewBackend(c *gin.Context) {
 	SSHCopyFile("docker/init.sh", newServer.DstPath+"/docker/init.sh", conn)
 
 	SSHRunCmd("chmod +x "+newServer.DstPath+"/ogree_app_backend", conn, true)
-	SSHRunCmd("cd "+newServer.DstPath+" && nohup "+newServer.DstPath+"/ogree_app_backend -port 2231 > "+newServer.DstPath+"/ogree_backend.out", conn, false)
+	SSHRunCmd("cd "+newServer.DstPath+" && nohup "+newServer.DstPath+"/ogree_app_backend -port "+newServer.RunPort+" > "+newServer.DstPath+"/ogree_backend.out", conn, false)
 
 	c.String(http.StatusOK, "all good")
 }

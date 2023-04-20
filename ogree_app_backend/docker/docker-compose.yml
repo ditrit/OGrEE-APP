@@ -99,7 +99,7 @@ services:
       context: ${APPBUILDDIR}#${APPBRANCH}
       # context: ../../
       args:
-      - API_URL=http://localhost:${APIPORT}
+      - API_URL=http://${APIEXTERNALURL}:${APIPORT}
     image: dbft/webapp:dockerfile
     profiles: ["web"]
     container_name: ${COMPOSE_PROJECT_NAME}_webapp

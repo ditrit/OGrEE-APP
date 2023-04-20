@@ -6,11 +6,13 @@ class Tenant {
   String customerPassword;
   String apiUrl;
   String webUrl;
+  String apiPort;
+  String webPort;
   bool hasWeb;
   bool hasCli;
 
   Tenant(this.name, this.customerPassword, this.apiUrl, this.webUrl,
-      this.hasWeb, this.hasCli);
+      this.apiPort, this.webPort, this.hasWeb, this.hasCli);
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -18,6 +20,8 @@ class Tenant {
       'customerPassword': customerPassword,
       'apiUrl': apiUrl,
       'webUrl': webUrl,
+      'apiPort': apiPort,
+      'webPort': webPort,
       'hasWeb': hasWeb,
       'hasCli': hasCli,
     };
@@ -29,6 +33,8 @@ class Tenant {
         map['customerPassword'].toString(),
         map['apiUrl'].toString(),
         map['webUrl'].toString(),
+        map['apiPort'].toString(),
+        map['webPort'].toString(),
         map['hasWeb'],
         map['hasCli']);
   }

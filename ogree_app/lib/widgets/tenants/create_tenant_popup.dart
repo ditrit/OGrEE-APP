@@ -20,6 +20,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
   String? _tenantPassword;
   String? _apiUrl;
   String? _webUrl;
+  String? _apiPort;
+  String? _webPort;
   bool _hasWeb = true;
   bool _hasCli = true;
   bool _isLoading = false;
@@ -87,7 +89,9 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                         child: CheckboxListTile(
                           controlAffinity: ListTileControlAffinity.leading,
                           value: _hasWeb,
-                          onChanged: (value) => _hasWeb = value!,
+                          onChanged: (value) => setState(() {
+                            _hasWeb = value!;
+                          }),
                           title: Text("WEB"),
                         ),
                       ),
@@ -96,23 +100,35 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                         child: CheckboxListTile(
                           controlAffinity: ListTileControlAffinity.leading,
                           value: _hasCli,
-                          onChanged: (value) => _hasCli = value!,
+                          onChanged: (value) => setState(() {
+                            _hasCli = value!;
+                          }),
                           title: Text("CLI"),
                         ),
                       ),
                     ],
                   ),
                   getFormField(
-                      save: (newValue) => _apiUrl = newValue,
+                      save: (newValue) {
+                        var splitted = newValue!.split(":");
+                        _apiUrl = splitted[0];
+                        _apiPort = splitted[1];
+                      },
                       label: "New API Port",
                       icon: Icons.cloud,
-                      prefix: "http://localhost:",
+                      prefix: "http://",
+                      isUrl: true,
                       formatters: [FilteringTextInputFormatter.digitsOnly]),
                   getFormField(
-                      save: (newValue) => _webUrl = newValue,
+                      save: (newValue) {
+                        var splitted = newValue!.split(":");
+                        _webUrl = splitted[0];
+                        _webPort = splitted[1];
+                      },
                       label: "New Web Port",
                       icon: Icons.monitor,
-                      prefix: "http://localhost:",
+                      prefix: "http://",
+                      isUrl: true,
                       formatters: [FilteringTextInputFormatter.digitsOnly]),
                   const SizedBox(height: 40),
                   Row(
@@ -141,6 +157,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                   _tenantPassword!,
                                   _apiUrl!,
                                   _webUrl!,
+                                  _apiPort!,
+                                  _apiUrl!,
                                   _hasWeb,
                                   _hasCli));
                               if (response == "") {
@@ -186,7 +204,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
       required IconData icon,
       String? prefix,
       String? suffix,
-      List<TextInputFormatter>? formatters}) {
+      List<TextInputFormatter>? formatters,
+      bool isUrl = false}) {
     return Padding(
       padding: const EdgeInsets.only(left: 2, right: 10),
       child: TextFormField(
@@ -194,6 +213,15 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
         validator: (text) {
           if (text == null || text.isEmpty) {
             return AppLocalizations.of(context)!.mandatoryField;
+          }
+          if (isUrl) {
+            var splitted = text.split(":");
+            if (splitted.length != 2) {
+              return "Wrong format for URL: expected host:port";
+            }
+            if (int.tryParse(splitted[1]) != null) {
+              return "Wrong format for URL: port should only have digits";
+            }
           }
           return null;
         },
