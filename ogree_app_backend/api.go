@@ -265,16 +265,27 @@ func removeTenant(c *gin.Context) {
 
 func login(c *gin.Context) {
 	var userIn user
+
+	println("Login")
+
 	if err := c.BindJSON(&userIn); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, err.Error())
+		println("ERROR:")
+		println(err.Error())
+		c.IndentedJSON(http.StatusForbidden, err.Error())
+		mapbody := make(map[string]string)
+		jsonData, _ := ioutil.ReadAll(c.Request.Body)
+		json.Unmarshal(jsonData, &mapbody)
+		fmt.Println(mapbody)
 	} else {
 		// Check credentials
 		if userIn.Email != "admin" ||
 			bcrypt.CompareHashAndPassword([]byte(os.Getenv("ADM_PASSWORD")), []byte(userIn.Password)) != nil {
+			println("Credentials error")
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid credentials"})
 			return
 		}
 
+		println("Generate")
 		// Generate token
 		token, err := auth.GenerateToken(userIn.Email)
 		if err != nil {
