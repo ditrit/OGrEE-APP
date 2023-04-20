@@ -99,7 +99,7 @@ type backendServer struct {
 func getTenants(c *gin.Context) {
 	data, e := ioutil.ReadFile("tenants.json")
 	if e != nil {
-		if strings.Contains(e.Error(), "no such file") {
+		if strings.Contains(e.Error(), "no such file") || strings.Contains(e.Error(), "cannot find") {
 			var file, e = os.Create("tenants.json")
 			if e != nil {
 				panic(e.Error())
