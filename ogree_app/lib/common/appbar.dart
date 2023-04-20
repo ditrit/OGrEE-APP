@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/pages/login_page.dart';
 import 'package:ogree_app/pages/projects_page.dart';
@@ -32,6 +33,12 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
       ),
     )),
     actions: [
+      isTenantMode
+          ? Padding(
+              padding: const EdgeInsets.only(right: 20),
+              child: Text(apiUrl, style: TextStyle(color: Colors.white)),
+            )
+          : Container(),
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 15),
         child: LanguageToggle(),
