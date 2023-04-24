@@ -17,6 +17,8 @@ class DockerView extends StatelessWidget {
         builder: (context, _) {
           if (_dockerInfo == null) {
             return const Center(child: CircularProgressIndicator());
+          } else if (_dockerInfo!.isEmpty) {
+            return Text("Unable to retrieve docker information");
           } else {
             return Padding(
               padding: const EdgeInsets.all(16.0),

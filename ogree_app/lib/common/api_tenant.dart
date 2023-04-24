@@ -71,6 +71,23 @@ Future<String> createUser(User user) async {
   }
 }
 
+Future<String> modifyUser(String id, Map<String, String> roles) async {
+  print("API modify User");
+  Uri url = Uri.parse('$tenantUrl/api/users/$id');
+  final response = await http.patch(url,
+      body: json.encode(<String, dynamic>{
+        'roles': roles,
+      }),
+      headers: getHeader(tenantToken));
+  print(response.statusCode);
+  if (response.statusCode == 200) {
+    return "";
+  } else {
+    var data = json.decode(response.body);
+    return data["message"].toString();
+  }
+}
+
 Future<String> createDomain(Domain domain) async {
   print("API create Domain");
   Uri url = Uri.parse('$tenantUrl/api/domains');
@@ -92,7 +109,7 @@ Future<String> removeObject(String objName, String objType,
   Uri url = Uri.parse('$tenantUrl/api/$objType/$objName');
   final response = await client.delete(url, headers: getHeader(tenantToken));
   print(response.statusCode);
-  if (response.statusCode == 200) {
+  if (response.statusCode >= 200 && response.statusCode < 300) {
     return "";
   } else {
     var data = json.decode(response.body);

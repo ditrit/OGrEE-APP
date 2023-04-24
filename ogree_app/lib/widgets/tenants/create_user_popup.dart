@@ -4,6 +4,7 @@ import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/models/user.dart';
+import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
 
 class CreateUserPopup extends StatefulWidget {
   Function() parentCallback;
@@ -120,13 +121,25 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
                                       setState(() {
                                         _isLoading = true;
                                       });
-                                      var response = await createUser(User(
-                                          email: _userName!,
-                                          password: _userPassword!,
-                                          roles: roles));
+
+                                      var response;
+                                      if (isEdit) {
+                                        response = await modifyUser(
+                                            widget.modifyUser!.id!, roles);
+                                      } else {
+                                        response = await createUser(User(
+                                            email: _userName!,
+                                            password: _userPassword!,
+                                            roles: roles));
+                                      }
+
                                       if (response == "") {
                                         widget.parentCallback();
-                                        showSnackBar(context, "User created 🥳",
+                                        showSnackBar(
+                                            context,
+                                            isEdit
+                                                ? "User successfully modified"
+                                                : "User created 🥳",
                                             isSuccess: true);
                                         Navigator.of(context).pop();
                                       } else {
@@ -172,16 +185,18 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
     var list = await fetchObjectsTree(onlyDomain: true);
     domainList =
         list[0].values.reduce((value, element) => List.from(value + element));
-    if (isEdit) {
+    if (!isEdit) {
       if (domainList!.isNotEmpty) {
+        domainList!.add("*");
         domainRoleRows.add(addDomainRoleRow(0));
       }
     } else {
+      domainList!.add("*");
       var roles = widget.modifyUser!.roles;
       for (var i = 0; i < roles.length; i++) {
-        selectedDomain[i] = roles.keys.toList()[i];
-        selectedRole[i] = roles.values.toList()[i];
-        addDomainRoleRow(i, useDefaultValue: false);
+        selectedDomain.add(roles.keys.elementAt(i));
+        selectedRole.add(roles.values.elementAt(i).capitalize());
+        domainRoleRows.add(addDomainRoleRow(i, useDefaultValue: false));
       }
     }
   }
@@ -230,10 +245,17 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
     );
   }
 
+  rebuildDomainRole() {
+    domainRoleRows = [];
+    for (var i = 0; i < selectedDomain.length; i++) {
+      domainRoleRows.add(addDomainRoleRow(i, useDefaultValue: false));
+    }
+  }
+
   removeDomainRoleRow(int rowIdx) {
-    domainRoleRows.removeAt(rowIdx);
     selectedDomain.removeAt(rowIdx);
     selectedRole.removeAt(rowIdx);
+    rebuildDomainRole();
   }
 
   addDomainRoleRow(int rowIdx, {bool useDefaultValue = true}) {
@@ -245,20 +267,24 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
       return Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          SizedBox(width: 20),
-          DropdownButton<String>(
-            value: selectedDomain[rowIdx],
-            items: domainList!.map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-            onChanged: (String? value) {
-              _setState(() {
-                selectedDomain[rowIdx] = value!;
-              });
-            },
+          // SizedBox(width: 20),
+          Flexible(
+            flex: 3,
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: selectedDomain[rowIdx],
+              items: domainList!.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (String? value) {
+                _setState(() {
+                  selectedDomain[rowIdx] = value!;
+                });
+              },
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -267,30 +293,35 @@ class _CreateUserPopupState extends State<CreateUserPopup> {
               color: Colors.blue.shade900,
             ),
           ),
-          DropdownButton<String>(
-            value: selectedRole[rowIdx],
-            items: roleList.map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-            onChanged: (String? value) {
-              _setState(() {
-                selectedRole[rowIdx] = value!;
-              });
-            },
+          Flexible(
+            flex: 2,
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: selectedRole[rowIdx],
+              items: roleList.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (String? value) {
+                _setState(() {
+                  selectedRole[rowIdx] = value!;
+                });
+              },
+            ),
           ),
           rowIdx > 0
               ? IconButton(
-                  splashRadius: 16,
+                  padding: EdgeInsets.all(4),
+                  constraints: BoxConstraints(),
                   iconSize: 14,
                   onPressed: () => setState(() => removeDomainRoleRow(rowIdx)),
                   icon: Icon(
                     Icons.delete,
                     color: Colors.red.shade400,
                   ))
-              : Container()
+              : SizedBox(width: 22),
         ],
       );
     });

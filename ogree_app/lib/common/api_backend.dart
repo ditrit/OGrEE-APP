@@ -234,7 +234,8 @@ Future<List<Map<String, String>>> fetchTenantDockerInfo(String tenantName,
   } else {
     // If the server did not return a 200 OK response,
     // then throw an exception.
-    throw Exception('${response.statusCode}: Failed to load objects');
+    print('${response.statusCode}: ${response.body}');
+    return [];
   }
 }
 
