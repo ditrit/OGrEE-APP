@@ -129,6 +129,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                       height: MediaQuery.of(context).size.height - 250,
                       width: double.maxFinite,
                       child: TabBarView(
+                        physics: NeverScrollableScrollPhysics(),
                         controller: _tabController,
                         children: [
                           DockerView(tenantName: widget.tenant.name),

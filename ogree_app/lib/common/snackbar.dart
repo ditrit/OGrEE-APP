@@ -18,6 +18,7 @@ void showSnackBar(
         backgroundColor: color,
         content: Text(message),
         duration: duration,
+        showCloseIcon: duration.inSeconds > 5,
       ),
     );
 }

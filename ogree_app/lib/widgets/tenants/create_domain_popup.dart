@@ -6,6 +6,7 @@ import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/models/domain.dart';
 import 'package:ogree_app/models/tenant.dart';
+import 'package:file_picker/file_picker.dart';
 
 class CreateDomainPopup extends StatefulWidget {
   Function() parentCallback;
@@ -16,7 +17,8 @@ class CreateDomainPopup extends StatefulWidget {
   State<CreateDomainPopup> createState() => _CreateDomainPopupState();
 }
 
-class _CreateDomainPopupState extends State<CreateDomainPopup> {
+class _CreateDomainPopupState extends State<CreateDomainPopup>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   String? _domainParent;
   String? _domainName;
@@ -28,6 +30,15 @@ class _CreateDomainPopupState extends State<CreateDomainPopup> {
   bool _isEdit = false;
   Domain? domain;
   String? domainId;
+  late TabController _tabController;
+  PlatformFile? _loadedFile;
+  String? _loadFileResult;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,33 +95,104 @@ class _CreateDomainPopupState extends State<CreateDomainPopup> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const Divider(height: 45),
-                  getFormField(
-                      save: (newValue) => _domainParent = newValue,
-                      label: "Parent Domain",
-                      icon: Icons.auto_awesome_mosaic,
-                      initialValue: _isEdit ? domain!.parent : null,
-                      noValidation: true),
-                  getFormField(
-                      save: (newValue) => _domainName = newValue,
-                      label: "Nom du domain",
-                      icon: Icons.auto_awesome_mosaic,
-                      initialValue: _isEdit ? domain!.name : null),
-                  getFormField(
-                      save: (newValue) => _domainDescription = newValue,
-                      label: "Description",
-                      icon: Icons.message,
-                      initialValue: _isEdit ? domain!.description : null),
-                  getFormField(
-                      save: (newValue) => _domainColor = newValue,
-                      label: "Couleur",
-                      icon: Icons.color_lens,
-                      formatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'[0-9a-fA-F]'))
-                      ],
-                      isColor: true,
-                      initialValue: _isEdit ? domain!.color : null),
+                  const Divider(),
+                  TabBar(
+                    controller: _tabController,
+                    // labelPadding: const EdgeInsets.only(left: 20, right: 20),
+                    // labelColor: Colors.black,
+                    // unselectedLabelColor: Colors.grey,
+                    // labelStyle: TextStyle(
+                    //     fontSize: 14,
+                    //     fontFamily: GoogleFonts.inter().fontFamily),
+                    // unselectedLabelStyle: TextStyle(
+                    //     fontSize: 14,
+                    //     fontFamily: GoogleFonts.inter().fontFamily),
+                    isScrollable: true,
+                    indicatorSize: TabBarIndicatorSize.label,
+                    tabs: [
+                      Tab(
+                        text: "Single domain",
+                      ),
+                      Tab(
+                        text: "Bulk file",
+                      ),
+                    ],
+                  ),
+                  Container(
+                    height: 250,
+                    child: TabBarView(
+                        physics: NeverScrollableScrollPhysics(),
+                        controller: _tabController,
+                        children: [
+                          ListView(
+                            children: [
+                              getFormField(
+                                  save: (newValue) => _domainParent = newValue,
+                                  label: "Parent Domain",
+                                  icon: Icons.auto_awesome_mosaic,
+                                  initialValue: _isEdit ? domain!.parent : null,
+                                  noValidation: true),
+                              getFormField(
+                                  save: (newValue) => _domainName = newValue,
+                                  label: "Nom du domain",
+                                  icon: Icons.auto_awesome_mosaic,
+                                  initialValue: _isEdit ? domain!.name : null),
+                              getFormField(
+                                  save: (newValue) =>
+                                      _domainDescription = newValue,
+                                  label: "Description",
+                                  icon: Icons.message,
+                                  initialValue:
+                                      _isEdit ? domain!.description : null),
+                              getFormField(
+                                  save: (newValue) => _domainColor = newValue,
+                                  label: "Couleur",
+                                  icon: Icons.color_lens,
+                                  formatters: [
+                                    FilteringTextInputFormatter.allow(
+                                        RegExp(r'[0-9a-fA-F]'))
+                                  ],
+                                  isColor: true,
+                                  initialValue: _isEdit ? domain!.color : null),
+                            ],
+                          ),
+                          Center(
+                            child: ListView(shrinkWrap: true, children: [
+                              Align(
+                                child: ElevatedButton.icon(
+                                    onPressed: () async {
+                                      print("hey there");
+                                      FilePickerResult? result =
+                                          await FilePicker.platform.pickFiles();
+                                      if (result != null) {
+                                        print("gotcha");
+                                        setState(() {
+                                          _loadedFile = result.files.single;
+                                        });
+                                      }
+                                    },
+                                    icon: Icon(Icons.download),
+                                    label: Text("Select JSON file")),
+                              ),
+                              _loadedFile != null
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: Align(
+                                        child: Text(
+                                            "File ${_loadedFile!.name} loaded!"),
+                                      ),
+                                    )
+                                  : Container(),
+                              _loadFileResult != null
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: Text('Result:\n $_loadFileResult'),
+                                    )
+                                  : Container(),
+                            ]),
+                          )
+                        ]),
+                  ),
                   const SizedBox(height: 40),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -170,31 +252,48 @@ class _CreateDomainPopupState extends State<CreateDomainPopup> {
                           : Container(),
                       ElevatedButton.icon(
                         onPressed: () async {
-                          if (_formKey.currentState!.validate()) {
-                            _formKey.currentState!.save();
-                            setState(() {
-                              _isLoading = true;
-                            });
-                            var newDomain = Domain(_domainName!, _domainColor!,
-                                _domainDescription!, _domainParent!);
-                            String response;
-                            if (_isEdit) {
-                              response =
-                                  await updateDomain(domainId!, newDomain);
+                          if (_tabController.index == 1) {
+                            if (_loadedFile == null) {
+                              showSnackBar(context,
+                                  "Select a JSON file for bulk creation");
                             } else {
-                              response = await createDomain(newDomain);
-                            }
-                            if (response == "") {
-                              widget.parentCallback();
-                              showSnackBar(
-                                  context, "Domain créé avec succès ! 🥳",
-                                  isSuccess: true);
-                              Navigator.of(context).pop();
-                            } else {
+                              var response =
+                                  await createBulkDomain(_loadedFile!.bytes!);
                               setState(() {
-                                _isLoading = false;
+                                _loadFileResult =
+                                    response.replaceAll(",", ",\n");
                               });
-                              showSnackBar(context, response, isError: true);
+                            }
+                          } else {
+                            if (_formKey.currentState!.validate()) {
+                              _formKey.currentState!.save();
+                              setState(() {
+                                _isLoading = true;
+                              });
+                              var newDomain = Domain(
+                                  _domainName!,
+                                  _domainColor!,
+                                  _domainDescription!,
+                                  _domainParent!);
+                              String response;
+                              if (_isEdit) {
+                                response =
+                                    await updateDomain(domainId!, newDomain);
+                              } else {
+                                response = await createDomain(newDomain);
+                              }
+                              if (response == "") {
+                                widget.parentCallback();
+                                showSnackBar(
+                                    context, "Domain créé avec succès ! 🥳",
+                                    isSuccess: true);
+                                Navigator.of(context).pop();
+                              } else {
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                                showSnackBar(context, response, isError: true);
+                              }
                             }
                           }
                         },

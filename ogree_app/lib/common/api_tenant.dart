@@ -102,6 +102,22 @@ Future<String> createDomain(Domain domain) async {
   }
 }
 
+Future<String> createBulkDomain(Uint8List file) async {
+  print("API create Domain");
+  Uri url = Uri.parse('$tenantUrl/api/domains/bulk');
+  final response =
+      await http.post(url, body: file, headers: getHeader(tenantToken));
+  print(response.statusCode);
+  if (response.statusCode == 200) {
+    var data = json.decode(response.body);
+    print(data.toString());
+    return data.toString();
+  } else {
+    var data = json.decode(response.body);
+    return data["message"].toString();
+  }
+}
+
 Future<String> removeObject(String objName, String objType,
     {http.Client? client}) async {
   print("API delete object $objType");
