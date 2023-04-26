@@ -5,7 +5,7 @@ import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
-import 'package:ogree_app/widgets/tenants/container_logs_popup.dart';
+import 'package:ogree_app/widgets/tenants/popups/container_logs_popup.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TenantCard extends StatelessWidget {

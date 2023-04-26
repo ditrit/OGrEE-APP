@@ -8,19 +8,19 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/models/user.dart';
 import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
 
-class CreateUserPopup extends StatefulWidget {
+class UserPopup extends StatefulWidget {
   Function() parentCallback;
   User? modifyUser;
-  CreateUserPopup({super.key, required this.parentCallback, this.modifyUser});
+  UserPopup({super.key, required this.parentCallback, this.modifyUser});
 
   @override
-  State<CreateUserPopup> createState() => _CreateUserPopupState();
+  State<UserPopup> createState() => _UserPopupState();
 }
 
-class _CreateUserPopupState extends State<CreateUserPopup>
-    with TickerProviderStateMixin {
+class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   String? _userName;
+  String? _userEmail;
   String? _userPassword;
   bool _isLoading = false;
   List<String>? domainList;
@@ -97,7 +97,7 @@ class _CreateUserPopupState extends State<CreateUserPopup>
                         Container(
                           height: 300,
                           child: Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
+                            padding: const EdgeInsets.only(top: 4.0),
                             child: TabBarView(
                               physics: NeverScrollableScrollPhysics(),
                               controller: _tabController,
@@ -161,7 +161,8 @@ class _CreateUserPopupState extends State<CreateUserPopup>
                                               widget.modifyUser!.id!, roles);
                                         } else {
                                           response = await createUser(User(
-                                              email: _userName!,
+                                              name: _userName!,
+                                              email: _userEmail!,
                                               password: _userPassword!,
                                               roles: roles));
                                         }
@@ -254,6 +255,11 @@ class _CreateUserPopupState extends State<CreateUserPopup>
       children: [
         getFormField(
             save: (newValue) => _userName = newValue,
+            label: "Name",
+            icon: Icons.person,
+            initial: _isEdit ? widget.modifyUser!.name : null),
+        getFormField(
+            save: (newValue) => _userEmail = newValue,
             label: "Email",
             icon: Icons.alternate_email,
             initial: _isEdit ? widget.modifyUser!.email : null),

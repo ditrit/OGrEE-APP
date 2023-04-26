@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:ogree_app/widgets/tenants/create_domain_popup.dart';
+import 'package:ogree_app/widgets/tenants/popups/domain_popup.dart';
 
 import '../app_controller.dart';
 
@@ -58,7 +58,7 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
                             padding: EdgeInsets.all(2),
                             onPressed: () => showCustomPopup(
                                 context,
-                                CreateDomainPopup(
+                                DomainPopup(
                                   parentCallback: () => appController
                                       .init({}, onlyDomain: true, reload: true),
                                   domainId: nodeScope.node.id,

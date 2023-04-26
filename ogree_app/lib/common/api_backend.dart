@@ -23,6 +23,28 @@ getHeader(token) => {
       'Authorization': 'Bearer $token',
     };
 
+Future<List<String>> loginAPI(String email, String password,
+    {String userUrl = ""}) async {
+  if (userUrl != "") {
+    apiUrl = userUrl;
+  } else {
+    apiUrl = apiUrlEnvSet;
+  }
+  print("API login ogree $apiUrl");
+  Uri url = Uri.parse('$apiUrl/api/login');
+  final response = await http.post(url,
+      body:
+          json.encode(<String, String>{'email': email, 'password': password}));
+  if (response.statusCode == 200) {
+    Map<String, dynamic> data = json.decode(response.body);
+    data = (Map<String, dynamic>.from(data["account"]));
+    token = data["token"]!;
+    return [data["email"].toString(), data["isTenant"] ?? ""];
+  } else {
+    return [""];
+  }
+}
+
 Future<List<Map<String, List<String>>>> fetchObjectsTree(
     {onlyDomain = false}) async {
   print("API get tree");
@@ -254,46 +276,5 @@ Future<String> fetchContainerLogs(String name, {http.Client? client}) async {
     // If the server did not return a 200 OK response,
     // then throw an exception.
     throw Exception('${response.statusCode}: Failed to load objects');
-  }
-}
-
-Future<List<String>> loginAPI(String email, String password,
-    {String userUrl = ""}) async {
-  if (userUrl != "") {
-    apiUrl = userUrl;
-  } else {
-    apiUrl = apiUrlEnvSet;
-  }
-  print("API login ogree $apiUrl");
-  Uri url = Uri.parse('$apiUrl/api/login');
-  final response = await http.post(url,
-      body:
-          json.encode(<String, String>{'email': email, 'password': password}));
-  if (response.statusCode == 200) {
-    Map<String, dynamic> data = json.decode(response.body);
-    data = (Map<String, dynamic>.from(data["account"]));
-    token = data["token"]!;
-    return [data["email"].toString(), data["isTenant"] ?? ""];
-  } else {
-    return [""];
-  }
-}
-
-Future<String> loginAPITenant(
-    String email, String password, String userUrl) async {
-  print("API login to ogree-api $userUrl");
-  Uri url = Uri.parse('$userUrl/api/login');
-  final response = await http.post(url,
-      body:
-          json.encode(<String, String>{'email': email, 'password': password}));
-  if (response.statusCode == 200) {
-    Map<String, dynamic> data = json.decode(response.body);
-    data = (Map<String, dynamic>.from(data["account"]));
-    tenantUrl = userUrl;
-    tenantToken = data["token"]!;
-    return data["token"]!;
-  } else {
-    print(response.statusCode);
-    return "";
   }
 }

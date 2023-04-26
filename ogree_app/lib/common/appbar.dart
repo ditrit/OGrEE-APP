@@ -6,7 +6,7 @@ import 'package:ogree_app/pages/login_page.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 import 'package:ogree_app/widgets/language_toggle.dart';
 
-import '../widgets/tenants/create_server_popup.dart';
+import '../widgets/tenants/popups/create_server_popup.dart';
 
 AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
   logout() => Navigator.of(context).push(

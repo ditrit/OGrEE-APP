@@ -1,11 +1,30 @@
 part of 'api_backend.dart';
 
-Future<Map<String, dynamic>> fetchTenantStats(String tenantUrl, String apiToken,
+Future<String> loginAPITenant(
+    String email, String password, String userUrl) async {
+  print("API login to ogree-api $userUrl");
+  Uri url = Uri.parse('$userUrl/api/login');
+  final response = await http.post(url,
+      body:
+          json.encode(<String, String>{'email': email, 'password': password}));
+  if (response.statusCode == 200) {
+    Map<String, dynamic> data = json.decode(response.body);
+    data = (Map<String, dynamic>.from(data["account"]));
+    tenantUrl = userUrl;
+    tenantToken = data["token"]!;
+    return data["token"]!;
+  } else {
+    print(response.statusCode);
+    return "";
+  }
+}
+
+Future<Map<String, dynamic>> fetchTenantStats(String tenantUrl,
     {http.Client? client}) async {
   print("API get Tenant Stats $tenantUrl");
   client ??= http.Client();
   Uri url = Uri.parse('$tenantUrl/api/stats');
-  final response = await client.get(url, headers: getHeader(apiToken));
+  final response = await client.get(url, headers: getHeader(tenantToken));
   print(response.statusCode);
   if (response.statusCode == 200) {
     print(response.body);
@@ -16,13 +35,12 @@ Future<Map<String, dynamic>> fetchTenantStats(String tenantUrl, String apiToken,
   }
 }
 
-Future<Map<String, dynamic>> fetchTenantApiVersion(
-    String tenantUrl, String apiToken,
+Future<Map<String, dynamic>> fetchTenantApiVersion(String tenantUrl,
     {http.Client? client}) async {
   print("API get Tenant Version $tenantUrl");
   client ??= http.Client();
   Uri url = Uri.parse('$tenantUrl/api/version');
-  final response = await client.get(url, headers: getHeader(apiToken));
+  final response = await client.get(url, headers: getHeader(tenantToken));
   print(response.statusCode);
   if (response.statusCode == 200) {
     print(response.body);
@@ -34,12 +52,12 @@ Future<Map<String, dynamic>> fetchTenantApiVersion(
   }
 }
 
-Future<List<User>> fetchApiUsers(String tenantUrl, String apiToken,
+Future<List<User>> fetchApiUsers(String tenantUrl,
     {http.Client? client}) async {
   print("API get users $tenantUrl");
   client ??= http.Client();
   Uri url = Uri.parse('$tenantUrl/api/users');
-  final response = await client.get(url, headers: getHeader(apiToken));
+  final response = await client.get(url, headers: getHeader(tenantToken));
   print(response.statusCode);
   if (response.statusCode == 200) {
     print(response.body);

@@ -8,16 +8,16 @@ import 'package:ogree_app/models/domain.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:file_picker/file_picker.dart';
 
-class CreateDomainPopup extends StatefulWidget {
+class DomainPopup extends StatefulWidget {
   Function() parentCallback;
   String? domainId;
-  CreateDomainPopup({super.key, required this.parentCallback, this.domainId});
+  DomainPopup({super.key, required this.parentCallback, this.domainId});
 
   @override
-  State<CreateDomainPopup> createState() => _CreateDomainPopupState();
+  State<DomainPopup> createState() => _DomainPopupState();
 }
 
-class _CreateDomainPopupState extends State<CreateDomainPopup>
+class _DomainPopupState extends State<DomainPopup>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   String? _domainParent;

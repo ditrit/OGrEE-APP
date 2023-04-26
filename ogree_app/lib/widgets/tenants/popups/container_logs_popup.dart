@@ -3,7 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 
-import '../../models/tenant.dart';
+import '../../../models/tenant.dart';
 
 class ContainerLogsPopup extends StatefulWidget {
   String containerName;
