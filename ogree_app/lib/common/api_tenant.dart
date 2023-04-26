@@ -102,9 +102,9 @@ Future<String> createDomain(Domain domain) async {
   }
 }
 
-Future<String> createBulkDomain(Uint8List file) async {
+Future<String> createBulkFile(Uint8List file, String type) async {
   print("API create Domain");
-  Uri url = Uri.parse('$tenantUrl/api/domains/bulk');
+  Uri url = Uri.parse('$tenantUrl/api/$type/bulk');
   final response =
       await http.post(url, body: file, headers: getHeader(tenantToken));
   print(response.statusCode);
