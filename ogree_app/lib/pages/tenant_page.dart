@@ -39,7 +39,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
     return Scaffold(
-        backgroundColor: Color.fromARGB(255, 238, 238, 241),
+        backgroundColor: const Color.fromARGB(255, 238, 238, 241),
         appBar: myAppBar(context, widget.userEmail, isTenantMode: true),
         body: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -61,7 +61,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                           Icons.arrow_back,
                           color: Colors.blue.shade900,
                         )),
-                    SizedBox(width: 5),
+                    const SizedBox(width: 5),
                     Text(
                       "Tenant ${widget.tenant.name}",
                       style: Theme.of(context).textTheme.headlineLarge,
@@ -87,32 +87,32 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                           fontFamily: GoogleFonts.inter().fontFamily),
                       isScrollable: true,
                       indicatorSize: TabBarIndicatorSize.label,
-                      tabs: const [
+                      tabs: [
                         Tab(
-                          text: "Déploiement",
-                          icon: Icon(Icons.dns),
+                          text: localeMsg.deployment,
+                          icon: const Icon(Icons.dns),
                         ),
-                        Tab(
+                        const Tab(
                           text: "API Stats",
                           icon: Icon(Icons.info),
                         ),
                         Tab(
-                          text: "Domains",
-                          icon: Icon(Icons.business),
+                          text: localeMsg.domain + "s",
+                          icon: const Icon(Icons.business),
                         ),
                         Tab(
-                          text: "Users",
-                          icon: Icon(Icons.person),
+                          text: localeMsg.user + "s",
+                          icon: const Icon(Icons.person),
                         ),
                       ],
                     ),
-                    Divider(),
+                    const Divider(),
                     Container(
                       padding: const EdgeInsets.only(left: 20),
                       height: MediaQuery.of(context).size.height - 250,
                       width: double.maxFinite,
                       child: TabBarView(
-                        physics: NeverScrollableScrollPhysics(),
+                        physics: const NeverScrollableScrollPhysics(),
                         controller: _tabController,
                         children: [
                           DockerView(tenantName: widget.tenant.name),
@@ -125,7 +125,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                               ? LockedView(
                                   tenant: widget.tenant,
                                   parentCallback: unlockView)
-                              : domainView(),
+                              : domainView(localeMsg),
                           _isLocked
                               ? LockedView(
                                   tenant: widget.tenant,
@@ -148,7 +148,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
     });
   }
 
-  domainView() {
+  domainView(AppLocalizations localeMsg) {
     return Stack(children: [
       AppControllerScope(
         controller: appController,
@@ -191,8 +191,8 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                 _reloadDomains = true;
               });
             })),
-            icon: Icon(Icons.add),
-            label: Text("Créer domain"),
+            icon: const Icon(Icons.add),
+            label: Text("${localeMsg.create} ${localeMsg.domain}"),
           ),
         ),
       ),

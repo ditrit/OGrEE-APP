@@ -5,6 +5,7 @@ import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/pages/login_page.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 import 'package:ogree_app/widgets/language_toggle.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../widgets/tenants/popups/create_server_popup.dart';
 
@@ -60,7 +61,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
                 ),
                 PopupMenuItem(
                   value: "new",
-                  child: Text("Add new server"),
+                  child: Text(AppLocalizations.of(context)!.addServer),
                 ),
               ],
           child: Row(

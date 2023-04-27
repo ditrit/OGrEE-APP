@@ -82,15 +82,15 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                           tabs: _isEdit
                               ? [
                                   Tab(
-                                    text: "Modify User",
+                                    text: localeMsg.modifyUser,
                                   ),
                                 ]
                               : [
                                   Tab(
-                                    text: "Create Single User",
+                                    text: localeMsg.createUser,
                                   ),
                                   Tab(
-                                    text: "Create Bulk File",
+                                    text: localeMsg.createBulkFile,
                                   ),
                                 ],
                         ),
@@ -99,15 +99,15 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                           child: Padding(
                             padding: const EdgeInsets.only(top: 4.0),
                             child: TabBarView(
-                              physics: NeverScrollableScrollPhysics(),
+                              physics: const NeverScrollableScrollPhysics(),
                               controller: _tabController,
                               children: _isEdit
                                   ? [
-                                      getUserView(),
+                                      getUserView(localeMsg),
                                     ]
                                   : [
-                                      getUserView(),
-                                      getBulkFileView(),
+                                      getUserView(localeMsg),
+                                      getBulkFileView(localeMsg),
                                     ],
                             ),
                           ),
@@ -131,8 +131,8 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                                 onPressed: () async {
                                   if (_tabController.index == 1) {
                                     if (_loadedFile == null) {
-                                      showSnackBar(context,
-                                          "Select a JSON file for bulk creation");
+                                      showSnackBar(
+                                          context, localeMsg.mustSelectJSON);
                                     } else if (_loadFileResult != null) {
                                       widget.parentCallback();
                                       Navigator.of(context).pop();
@@ -172,8 +172,8 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                                           showSnackBar(
                                               context,
                                               _isEdit
-                                                  ? "User successfully modified"
-                                                  : "User created 🥳",
+                                                  ? localeMsg.modifyOK
+                                                  : localeMsg.createOK,
                                               isSuccess: true);
                                           Navigator.of(context).pop();
                                         } else {
@@ -192,7 +192,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                                   }
                                 },
                                 label: Text(_isEdit
-                                    ? "Modifier"
+                                    ? localeMsg.modify
                                     : (_loadFileResult == null
                                         ? localeMsg.create
                                         : "OK")),
@@ -243,14 +243,14 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
     Map<String, String> roles = {};
     for (var i = 0; i < selectedDomain.length; i++) {
       if (roles.containsKey(selectedDomain[i])) {
-        throw Exception("Only one role can be assigned per domain");
+        throw Exception(AppLocalizations.of(context)!.onlyOneRoleDomain);
       }
       roles[selectedDomain[i]] = selectedRole[i].toLowerCase();
     }
     return roles;
   }
 
-  getUserView() {
+  getUserView(AppLocalizations localeMsg) {
     return ListView(
       children: [
         getFormField(
@@ -265,13 +265,13 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
             initial: _isEdit ? widget.modifyUser!.email : null),
         getFormField(
             save: (newValue) => _userPassword = newValue,
-            label: "Mot de passe",
+            label: localeMsg.password,
             icon: Icons.lock,
             initial: _isEdit ? widget.modifyUser!.password : null,
             obscure: true),
-        Padding(
-          padding: const EdgeInsets.only(top: 20.0, bottom: 10),
-          child: Text("Permissions :"),
+        const Padding(
+          padding: EdgeInsets.only(top: 20.0, bottom: 10),
+          child: Text("Permissions"),
         ),
         Column(children: domainRoleRows),
         Padding(
@@ -283,40 +283,38 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                       domainRoleRows
                           .add(addDomainRoleRow(domainRoleRows.length));
                     }),
-                icon: Icon(Icons.add),
-                label: Text("Domain")),
+                icon: const Icon(Icons.add),
+                label: Text(localeMsg.domain)),
           ),
         )
       ],
     );
   }
 
-  getBulkFileView() {
+  getBulkFileView(AppLocalizations localeMsg) {
     return Center(
       child: ListView(shrinkWrap: true, children: [
         _loadFileResult == null
             ? Align(
                 child: ElevatedButton.icon(
                     onPressed: () async {
-                      print("hey there");
                       FilePickerResult? result =
                           await FilePicker.platform.pickFiles();
                       if (result != null) {
-                        print("gotcha");
                         setState(() {
                           _loadedFile = result.files.single;
                         });
                       }
                     },
-                    icon: Icon(Icons.download),
-                    label: Text("Select JSON file")),
+                    icon: const Icon(Icons.download),
+                    label: Text(localeMsg.selectJSON)),
               )
             : Container(),
         _loadedFile != null
             ? Padding(
                 padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                 child: Align(
-                  child: Text("File ${_loadedFile!.name} loaded!"),
+                  child: Text(localeMsg.fileLoaded(_loadedFile!.name)),
                 ),
               )
             : Container(),
@@ -327,7 +325,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
                     'Result:\n $_loadFileResult',
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               )
@@ -437,15 +435,15 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
           ),
           rowIdx > 0
               ? IconButton(
-                  padding: EdgeInsets.all(4),
-                  constraints: BoxConstraints(),
+                  padding: const EdgeInsets.all(4),
+                  constraints: const BoxConstraints(),
                   iconSize: 14,
                   onPressed: () => setState(() => removeDomainRoleRow(rowIdx)),
                   icon: Icon(
                     Icons.delete,
                     color: Colors.red.shade400,
                   ))
-              : SizedBox(width: 22),
+              : const SizedBox(width: 22),
         ],
       );
     });

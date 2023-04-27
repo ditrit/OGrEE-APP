@@ -7,6 +7,7 @@ import 'package:ogree_app/models/user.dart';
 import 'package:ogree_app/pages/results_page.dart';
 import 'package:ogree_app/widgets/select_objects/app_controller.dart';
 import 'package:ogree_app/widgets/tenants/tenant_card.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'popups/user_popup.dart';
 
@@ -28,6 +29,7 @@ class _UserViewState extends State<UserView> {
 
   @override
   Widget build(BuildContext context) {
+    final localeMsg = AppLocalizations.of(context)!;
     return FutureBuilder(
         future: _loadUsers ? getUsers() : null,
         builder: (context, _) {
@@ -35,7 +37,6 @@ class _UserViewState extends State<UserView> {
             return const Center(child: CircularProgressIndicator());
           }
           _loadUsers = false;
-          print("Rebuild users view");
           return Theme(
             data: ThemeData(
               cardTheme: const CardTheme(
@@ -51,7 +52,7 @@ class _UserViewState extends State<UserView> {
                     decoration: InputDecoration(
                   border: InputBorder.none,
                   isDense: true,
-                  label: Text("Rechercher"),
+                  label: Text(localeMsg.search),
                   prefixIcon: IconButton(
                     onPressed: () => {},
                     tooltip: "Search",
@@ -65,8 +66,7 @@ class _UserViewState extends State<UserView> {
                     padding: const EdgeInsets.only(right: 4.0),
                     child: IconButton(
                         splashRadius: 23,
-                        // iconSize: 14,
-                        onPressed: () => selectedUsers.length > 0
+                        onPressed: () => selectedUsers.isNotEmpty
                             ? showCustomPopup(
                                 context,
                                 UserPopup(
@@ -79,9 +79,8 @@ class _UserViewState extends State<UserView> {
                                 ),
                                 isDismissible: true)
                             : null,
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.edit,
-                          // color: Colors.red.shade900,
                         )),
                   ),
                   Padding(
@@ -120,8 +119,8 @@ class _UserViewState extends State<UserView> {
                           _loadUsers = true;
                         });
                       })),
-                      icon: Icon(Icons.add, color: Colors.white),
-                      label: Text("Créer user"),
+                      icon: const Icon(Icons.add, color: Colors.white),
+                      label: Text("${localeMsg.create} ${localeMsg.user}"),
                     ),
                   ),
                 ],

@@ -3,6 +3,7 @@ import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
 import 'package:ogree_app/widgets/tenants/popups/container_logs_popup.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DockerView extends StatelessWidget {
   final String tenantName;
@@ -12,13 +13,14 @@ class DockerView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localeMsg = AppLocalizations.of(context)!;
     return FutureBuilder(
         future: getData(),
         builder: (context, _) {
           if (_dockerInfo == null) {
             return const Center(child: CircularProgressIndicator());
           } else if (_dockerInfo!.isEmpty) {
-            return Text("Unable to retrieve docker information");
+            return Text(localeMsg.noDockerInfo);
           } else {
             return Padding(
               padding: const EdgeInsets.all(16.0),
@@ -50,7 +52,7 @@ class DockerView extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Text(
                     e,
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ))
             .toList()));
@@ -88,19 +90,19 @@ class DockerView extends StatelessWidget {
   getDockerText(String value) {
     if (value.contains("run")) {
       return Row(children: [
-        Icon(Icons.directions_run, color: Colors.green),
+        const Icon(Icons.directions_run, color: Colors.green),
         Text(
           value.capitalize(),
-          style: TextStyle(color: Colors.green),
+          style: const TextStyle(color: Colors.green),
         )
       ]);
     } else if (value.contains("exit")) {
       return Row(children: [
-        Icon(Icons.error_outline, color: Colors.red),
-        SizedBox(width: 2),
+        const Icon(Icons.error_outline, color: Colors.red),
+        const SizedBox(width: 2),
         Text(
           value.capitalize(),
-          style: TextStyle(color: Colors.red),
+          style: const TextStyle(color: Colors.red),
         )
       ]);
     } else {

@@ -5,7 +5,6 @@ import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/models/domain.dart';
-import 'package:ogree_app/models/tenant.dart';
 import 'package:file_picker/file_picker.dart';
 
 class DomainPopup extends StatefulWidget {
@@ -72,7 +71,6 @@ class _DomainPopupState extends State<DomainPopup>
   DomainForm(AppLocalizations localeMsg) {
     return Center(
       child: Container(
-        // height: 240,
         width: 500,
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: BoxDecoration(
@@ -103,15 +101,15 @@ class _DomainPopupState extends State<DomainPopup>
                     tabs: _isEdit
                         ? [
                             Tab(
-                              text: "Modify Domain",
+                              text: localeMsg.modifyDomain,
                             ),
                           ]
                         : [
                             Tab(
-                              text: "Create Single Domain",
+                              text: localeMsg.createDomain,
                             ),
                             Tab(
-                              text: "Create Bulk File",
+                              text: localeMsg.createBulkFile,
                             ),
                           ],
                   ),
@@ -164,7 +162,7 @@ class _DomainPopupState extends State<DomainPopup>
                                         domainId!, "domains");
                                     if (response == "") {
                                       widget.parentCallback();
-                                      showSnackBar(context, "Domain supprimé");
+                                      showSnackBar(context, localeMsg.deleteOK);
                                       Navigator.of(context).pop();
                                     } else {
                                       setState(() {
@@ -194,8 +192,7 @@ class _DomainPopupState extends State<DomainPopup>
                         onPressed: () async {
                           if (_tabController.index == 1) {
                             if (_loadedFile == null) {
-                              showSnackBar(context,
-                                  "Select a JSON file for bulk creation");
+                              showSnackBar(context, localeMsg.mustSelectJSON);
                             } else if (_loadFileResult != null) {
                               widget.parentCallback();
                               Navigator.of(context).pop();
@@ -227,8 +224,8 @@ class _DomainPopupState extends State<DomainPopup>
                               }
                               if (response == "") {
                                 widget.parentCallback();
-                                showSnackBar(
-                                    context, "Domain créé avec succès ! 🥳",
+                                showSnackBar(context,
+                                    "${_isEdit ? localeMsg.modifyOK : localeMsg.createOK} 🥳",
                                     isSuccess: true);
                                 Navigator.of(context).pop();
                               } else {
@@ -241,7 +238,7 @@ class _DomainPopupState extends State<DomainPopup>
                           }
                         },
                         label: Text(_isEdit
-                            ? "Modifier"
+                            ? localeMsg.modify
                             : (_loadFileResult == null
                                 ? localeMsg.create
                                 : "OK")),
@@ -269,17 +266,18 @@ class _DomainPopupState extends State<DomainPopup>
   }
 
   getDomainForm() {
+    final localeMsg = AppLocalizations.of(context)!;
     return ListView(
       children: [
         getFormField(
             save: (newValue) => _domainParent = newValue,
-            label: "Parent Domain",
+            label: localeMsg.parentDomain,
             icon: Icons.auto_awesome_mosaic,
             initialValue: _isEdit ? domain!.parent : null,
             noValidation: true),
         getFormField(
             save: (newValue) => _domainName = newValue,
-            label: "Nom du domain",
+            label: localeMsg.domainName,
             icon: Icons.auto_awesome_mosaic,
             initialValue: _isEdit ? domain!.name : null),
         getFormField(
@@ -289,7 +287,7 @@ class _DomainPopupState extends State<DomainPopup>
             initialValue: _isEdit ? domain!.description : null),
         getFormField(
             save: (newValue) => _domainColor = newValue,
-            label: "Couleur",
+            label: localeMsg.color,
             icon: Icons.color_lens,
             formatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F]'))
@@ -301,31 +299,30 @@ class _DomainPopupState extends State<DomainPopup>
   }
 
   getBulkFileView() {
+    final localeMsg = AppLocalizations.of(context)!;
     return Center(
       child: ListView(shrinkWrap: true, children: [
         _loadFileResult == null
             ? Align(
                 child: ElevatedButton.icon(
                     onPressed: () async {
-                      print("hey there");
                       FilePickerResult? result =
                           await FilePicker.platform.pickFiles();
                       if (result != null) {
-                        print("gotcha");
                         setState(() {
                           _loadedFile = result.files.single;
                         });
                       }
                     },
                     icon: Icon(Icons.download),
-                    label: Text("Select JSON file")),
+                    label: Text(localeMsg.selectJSON)),
               )
             : Container(),
         _loadedFile != null
             ? Padding(
                 padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                 child: Align(
-                  child: Text("File ${_loadedFile!.name} loaded!"),
+                  child: Text(localeMsg.fileLoaded(_loadedFile!.name)),
                 ),
               )
             : Container(),
@@ -353,6 +350,7 @@ class _DomainPopupState extends State<DomainPopup>
       bool isColor = false,
       String? initialValue,
       bool noValidation = false}) {
+    final localeMsg = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(left: 2, right: 10),
       child: TextFormField(
@@ -378,7 +376,7 @@ class _DomainPopupState extends State<DomainPopup>
             return AppLocalizations.of(context)!.mandatoryField;
           }
           if (isColor && text.length < 6) {
-            return "Should have 6 characters";
+            return localeMsg.shouldHaveXChars(6);
           }
           return null;
         },

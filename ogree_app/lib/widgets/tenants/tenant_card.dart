@@ -5,7 +5,6 @@ import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
-import 'package:ogree_app/widgets/tenants/popups/container_logs_popup.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TenantCard extends StatelessWidget {
@@ -60,7 +59,7 @@ class TenantCard extends StatelessWidget {
                           color: Colors.red.shade900,
                         )),
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   CircleAvatar(
                     radius: 13,
                     child: IconButton(
@@ -82,8 +81,8 @@ class TenantCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 2.0),
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 2.0),
                     child: Text("API URL:"),
                   ),
                   Text(
@@ -95,8 +94,8 @@ class TenantCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 2.0),
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 2.0),
                     child: Text("Web URL:"),
                   ),
                   Text(
@@ -142,6 +141,7 @@ class _DeleteDialogState extends State<DeleteDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final localeMsg = AppLocalizations.of(context)!;
     return Center(
       child: Container(
         height: 230,
@@ -156,12 +156,11 @@ class _DeleteDialogState extends State<DeleteDialog> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Êtes-vous sûr ?",
+                Text(localeMsg.areYouSure,
                     style: Theme.of(context).textTheme.headlineLarge),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 40),
-                  child: Text(
-                      "Toutes les données seront définitivement perdues !"),
+                  child: Text(localeMsg.allWillBeLost),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -186,9 +185,9 @@ class _DeleteDialogState extends State<DeleteDialog> {
                         setState(() => _isLoading = false);
                         widget.parentCallback();
                         Navigator.of(context).pop();
-                        showSnackBar(context, "Successfully deleted");
+                        showSnackBar(context, localeMsg.deleteOK);
                       },
-                      label: Text("Supprimer"),
+                      label: Text(localeMsg.delete),
                       icon: _isLoading
                           ? Container(
                               width: 24,
@@ -199,7 +198,7 @@ class _DeleteDialogState extends State<DeleteDialog> {
                                 strokeWidth: 3,
                               ),
                             )
-                          : Icon(
+                          : const Icon(
                               Icons.delete,
                               size: 16,
                             ),
@@ -207,7 +206,7 @@ class _DeleteDialogState extends State<DeleteDialog> {
                     const SizedBox(width: 15),
                     ElevatedButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: Text("Annuler"),
+                      child: Text(localeMsg.cancel),
                     )
                   ],
                 )

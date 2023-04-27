@@ -33,7 +33,7 @@ class _ApiStatsViewState extends State<ApiStatsView> {
                 child: Row(
                   children: [
                     Text(
-                      "$key : ",
+                      key,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text(_tenantStats![key].toString())

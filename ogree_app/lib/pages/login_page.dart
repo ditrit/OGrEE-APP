@@ -246,10 +246,9 @@ class _LoginPageState extends State<LoginPage> {
             }
             return null;
           },
-          // initialValue: options.first,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
               isDense: true,
-              labelText: "Choisir serveur",
+              labelText: localeMsg.selectServer,
               labelStyle: TextStyle(fontSize: 14)),
           onTap: () {
             textEditingController.clear();

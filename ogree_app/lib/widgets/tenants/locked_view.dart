@@ -43,9 +43,9 @@ class _LockedViewState extends State<LockedView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.lock, size: 64),
+            const Icon(Icons.lock, size: 64),
             const SizedBox(height: 20),
-            Text("Log in to this tenant's API to get access:"),
+            Text(localeMsg.loginTenant),
             const SizedBox(height: 20),
             SizedBox(
               width: 350,
@@ -106,7 +106,7 @@ class _LockedViewState extends State<LockedView> {
                 ),
                 child: Text(
                   localeMsg.login,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
