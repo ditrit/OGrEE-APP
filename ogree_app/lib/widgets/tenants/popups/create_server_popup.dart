@@ -14,15 +14,19 @@ class CreateServerPopup extends StatefulWidget {
   State<CreateServerPopup> createState() => _CreateServerPopupState();
 }
 
+enum AuthOption { pKey, password }
+
 class _CreateServerPopupState extends State<CreateServerPopup> {
   final _formKey = GlobalKey<FormState>();
   String? _sshHost;
   String? _sshUser;
   String? _sshKey;
+  String? _sshKeyPass;
+  String? _sshPassword;
   String? _installPath;
-  String? _sshDirPath;
   String? _port;
   bool _isLoading = false;
+  AuthOption? _authOption = AuthOption.pKey;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +52,7 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                     children: [
                       const Icon(Icons.add_to_photos),
                       Text(
-                        "   Create new Backend Server",
+                        "   ${localeMsg.createServer}",
                         style: GoogleFonts.inter(
                           fontSize: 22,
                           color: Colors.black,
@@ -66,17 +70,65 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                       save: (newValue) => _sshUser = newValue,
                       label: "SSH User",
                       icon: Icons.person),
-                  getFormField(
-                      save: (newValue) => _sshKey = newValue,
-                      label: "SSH Private Key (/local/path/file)",
-                      icon: Icons.lock),
+                  SizedBox(height: 8),
+                  Wrap(
+                    children: <Widget>[
+                      SizedBox(
+                        width: 200,
+                        child: RadioListTile<AuthOption>(
+                          dense: true,
+                          title: const Text('Private Key'),
+                          value: AuthOption.pKey,
+                          groupValue: _authOption,
+                          onChanged: (AuthOption? value) {
+                            setState(() {
+                              _authOption = value;
+                            });
+                          },
+                        ),
+                      ),
+                      SizedBox(
+                        width: 200,
+                        child: RadioListTile<AuthOption>(
+                          dense: true,
+                          title: Text(localeMsg.password),
+                          value: AuthOption.password,
+                          groupValue: _authOption,
+                          onChanged: (AuthOption? value) {
+                            setState(() {
+                              _authOption = value;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  _authOption == AuthOption.pKey
+                      ? Column(
+                          children: [
+                            getFormField(
+                                save: (newValue) => _sshKey = newValue,
+                                label: "SSH Private Key (/local/path/file)",
+                                icon: Icons.lock),
+                            getFormField(
+                                save: (newValue) => _sshKeyPass = newValue,
+                                label:
+                                    "Private Key Passphrase (${localeMsg.optional})",
+                                icon: Icons.lock,
+                                shouldValidate: false),
+                          ],
+                        )
+                      : getFormField(
+                          save: (newValue) => _sshPassword = newValue,
+                          label: localeMsg.password,
+                          icon: Icons.lock),
                   getFormField(
                       save: (newValue) => _installPath = newValue,
-                      label: "Install Path on server",
+                      label: localeMsg.serverPath,
                       icon: Icons.folder),
                   getFormField(
                       save: (newValue) => _port = newValue,
-                      label: "Backend Port on server",
+                      label: localeMsg.portServer,
                       icon: Icons.onetwothree,
                       formatters: [FilteringTextInputFormatter.digitsOnly]),
                   const SizedBox(height: 40),
@@ -101,18 +153,26 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                               setState(() {
                                 _isLoading = true;
                               });
-                              var response =
-                                  await createBackendServer(<String, String>{
-                                'host': _sshHost!,
-                                'user': _sshUser!,
-                                'pkey': _sshKey!,
-                                'dstpath': _installPath!,
-                                'runport': _port!,
-                              });
+
+                              var response = _authOption == AuthOption.pKey
+                                  ? await createBackendServer(<String, String>{
+                                      'host': _sshHost!,
+                                      'user': _sshUser!,
+                                      'pkey': _sshKey!,
+                                      'pkeypass': _sshKeyPass.toString(),
+                                      'dstpath': _installPath!,
+                                      'runport': _port!,
+                                    })
+                                  : await createBackendServer(<String, String>{
+                                      'host': _sshHost!,
+                                      'user': _sshUser!,
+                                      'password': _sshPassword!,
+                                      'dstpath': _installPath!,
+                                      'runport': _port!,
+                                    });
                               if (response == "") {
                                 widget.parentCallback();
-                                showSnackBar(
-                                    context, "New Backend created on server",
+                                showSnackBar(context, localeMsg.createOK,
                                     isSuccess: true);
                                 Navigator.of(context).pop();
                               } else {
@@ -152,14 +212,17 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
       required IconData icon,
       String? prefix,
       String? suffix,
-      List<TextInputFormatter>? formatters}) {
+      List<TextInputFormatter>? formatters,
+      bool shouldValidate = true}) {
     return Padding(
       padding: const EdgeInsets.only(left: 2, right: 10),
       child: TextFormField(
         onSaved: (newValue) => save(newValue),
         validator: (text) {
-          if (text == null || text.isEmpty) {
-            return AppLocalizations.of(context)!.mandatoryField;
+          if (shouldValidate) {
+            if (text == null || text.isEmpty) {
+              return AppLocalizations.of(context)!.mandatoryField;
+            }
           }
           return null;
         },

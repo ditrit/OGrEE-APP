@@ -12,6 +12,7 @@
   "modifyOK": "Utilisateur modifié avec succès",
   "createOK": "Crée avec succès !",
   "color": "Couleur",
+  "optional": "facultatif",
   
   "@welcome": { "description": "Login Page" },
   "welcome": "Bienvenue sur OGrEE",
@@ -115,6 +116,10 @@
   },
   "domain": "Domaine",
   "user": "Utilisateur",
+
   "addServer": "Ajouter nouveau serveur",
-  "selectServer": "Choisir serveur"
+  "selectServer": "Choisir serveur",
+  "createServer": "Créer backend dans serveur",
+  "serverPath": "Chemin d'installation (serveur)",
+  "portServer": "Porte pour le backend (serveur)"
 }

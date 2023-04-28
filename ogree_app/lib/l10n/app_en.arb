@@ -12,6 +12,7 @@
   "modifyOK": "Successfully modified",
   "createOK": "Successfully created",
   "color": "Color",
+  "optional": "optional",
 
   "welcome": "Welcome to OGrEE",
   "welcomeConnect": "Login to your personal space:",
@@ -86,6 +87,10 @@
   "shouldHaveXChars": "Should have al least {X} characters",
   "domain": "Domain",
   "user": "User",
+
   "addServer": "Add new server",
-  "selectServer": "Choose server"
+  "selectServer": "Choose server",
+  "createServer": "Create new Backend Server",
+  "serverPath": "Install Path on server",
+  "portServer": "Backend Port on server"
 }

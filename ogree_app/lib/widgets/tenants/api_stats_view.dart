@@ -27,7 +27,7 @@ class _ApiStatsViewState extends State<ApiStatsView> {
   Widget build(BuildContext context) {
     // Localized messages
     final localeMsg = AppLocalizations.of(context)!;
-
+    print("HELLOOOOOO");
     return FutureBuilder(
         // Async method that fetches the tenant's API usage statistics
         future: getTenantStats(),
@@ -74,6 +74,7 @@ class _ApiStatsViewState extends State<ApiStatsView> {
 
   // Async method that fetches the tenant's API usage statistics
   getTenantStats() async {
+    print("YOOOOO");
     // Fetch the statistics data from the tenant's API backend
     _tenantStats = await fetchTenantStats(
         "http://${widget.tenant.apiUrl}:${widget.tenant.apiPort}");

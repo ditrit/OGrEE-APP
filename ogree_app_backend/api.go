@@ -92,6 +92,7 @@ type backendServer struct {
 	User     string `json:"user" binding:"required"`
 	Password string `json:"password"`
 	Pkey     string `json:"pkey"`
+	PkeyPass string `json:"pkeypass"`
 	DstPath  string `json:"dstpath" binding:"required"`
 	RunPort  string `json:"runport" binding:"required"`
 }
@@ -309,19 +310,31 @@ func createNewBackend(c *gin.Context) {
 	var err error
 	var signer ssh.Signer
 	var homeDir string
+	sshAuthMethod := []ssh.AuthMethod{}
 
-	pKey, err := ioutil.ReadFile(newServer.Pkey)
-	if err != nil {
-		fmt.Println("Failed to read ssh_host_key")
-		c.String(http.StatusInternalServerError, err.Error())
-		return
-	}
+	if newServer.Password != "" {
+		println("password")
+		sshAuthMethod = append(sshAuthMethod, ssh.Password(newServer.Password))
+	} else {
+		pKey, err := ioutil.ReadFile(newServer.Pkey)
+		if err != nil {
+			fmt.Println("Failed to read ssh_host_key")
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
 
-	signer, err = ssh.ParsePrivateKey(pKey)
-	if err != nil {
-		fmt.Println(err.Error())
-		c.String(http.StatusInternalServerError, err.Error())
-		return
+		if newServer.PkeyPass != "" {
+			signer, err = ssh.ParsePrivateKeyWithPassphrase(pKey, []byte(newServer.PkeyPass))
+		} else {
+			signer, err = ssh.ParsePrivateKey(pKey)
+		}
+		if err != nil {
+			fmt.Println(err.Error())
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		sshAuthMethod = append(sshAuthMethod, ssh.PublicKeys(signer))
 	}
 
 	homeDir, err = os.UserHomeDir()
@@ -341,10 +354,7 @@ func createNewBackend(c *gin.Context) {
 	conf := &ssh.ClientConfig{
 		User:            newServer.User,
 		HostKeyCallback: hostkeyCallback,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(newServer.Password),
-			ssh.PublicKeys(signer),
-		},
+		Auth:            sshAuthMethod,
 	}
 
 	var conn *ssh.Client
