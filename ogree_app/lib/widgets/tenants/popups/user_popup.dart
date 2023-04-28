@@ -141,8 +141,8 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                                           _loadedFile!.bytes!, "users");
                                       setState(() {
                                         _loadFileResult = response
-                                            .replaceAll(",", ",\n")
-                                            .replaceAll("{", "\n{");
+                                            .replaceAll("},", "},\n> ")
+                                            .replaceFirst("{", ">  ");
                                       });
                                     }
                                   } else {
@@ -262,13 +262,15 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
             save: (newValue) => _userEmail = newValue,
             label: "Email",
             icon: Icons.alternate_email,
-            initial: _isEdit ? widget.modifyUser!.email : null),
+            initial: _isEdit ? widget.modifyUser!.email : null,
+            isReadOnly: _isEdit),
         getFormField(
             save: (newValue) => _userPassword = newValue,
             label: localeMsg.password,
             icon: Icons.lock,
             initial: _isEdit ? widget.modifyUser!.password : null,
-            obscure: true),
+            obscure: true,
+            isReadOnly: _isEdit),
         const Padding(
           padding: EdgeInsets.only(top: 20.0, bottom: 10),
           child: Text("Permissions"),
@@ -324,7 +326,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    'Result:\n $_loadFileResult',
+                    'Result:\n$_loadFileResult',
                     style: const TextStyle(color: Colors.white),
                   ),
                 ),
@@ -342,13 +344,14 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
       String? suffix,
       List<TextInputFormatter>? formatters,
       String? initial,
+      bool isReadOnly = false,
       bool obscure = false}) {
     return Padding(
       padding: const EdgeInsets.only(left: 2, right: 10),
       child: TextFormField(
         obscureText: obscure,
         initialValue: initial,
-        readOnly: _isEdit,
+        readOnly: isReadOnly,
         onSaved: (newValue) => save(newValue),
         validator: (text) {
           if (text == null || text.isEmpty) {

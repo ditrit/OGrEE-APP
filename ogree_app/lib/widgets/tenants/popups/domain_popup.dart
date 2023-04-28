@@ -202,6 +202,8 @@ class _DomainPopupState extends State<DomainPopup>
                               setState(() {
                                 _loadFileResult =
                                     response.replaceAll(",", ",\n");
+                                _loadFileResult = _loadFileResult!
+                                    .substring(1, _loadFileResult!.length - 1);
                               });
                             }
                           } else {
