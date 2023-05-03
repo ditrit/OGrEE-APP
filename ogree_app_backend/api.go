@@ -230,6 +230,14 @@ func addTenant(c *gin.Context) {
 		listTenants = append(listTenants, newTenant)
 		data, _ := json.MarshalIndent(listTenants, "", "  ")
 		_ = ioutil.WriteFile("tenants.json", data, 0644)
+		// Create .env copy
+		args = []string{"docker/.env", "docker/" + strings.ToLower(newTenant.Name) + ".env"}
+		cmd = exec.Command("cp", args...)
+		cmd.Stderr = &stderr
+		if _, err := cmd.Output(); err != nil {
+			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		}
+
 		c.IndentedJSON(http.StatusOK, "all good")
 	}
 
